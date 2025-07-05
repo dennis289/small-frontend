@@ -51,6 +51,7 @@
             density="compact"
             class="w-30"
             block
+            
             >Sign in</v-btn> 
             <br/>
             <div>

@@ -1,15 +1,15 @@
 <template>
   <v-card>
     <v-toolbar flat>
-      <v-toolbar-title>Home</v-toolbar-title>
+      <v-toolbar-title>People</v-toolbar-title>
       <v-btn
-        prepend-icon="mdi-account-multiple"
+        prepend-icon="mdi-home"
         class="ml-2"
         variant="tonal"
         color="blue-accent-2"
-        text="Roles"
-        to="/roles"
-      >Roles</v-btn> 
+        text="Home"
+        to="/home"
+      >Home</v-btn> 
       <v-spacer></v-spacer>
       <v-text-field
         v-model="search"
