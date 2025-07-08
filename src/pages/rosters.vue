@@ -1,27 +1,43 @@
 <template>
-  <div>
-    <v-row>
-      <v-col cols="12" md="6">
-        <v-menu>
-          <template #activator="{ props }">
-            <v-text-field
-              v-model="newRosterDate"
-              label="Select Date"
-              prepend-icon="mdi-calendar"
-              readonly
-              v-bind="props"
-            ></v-text-field>
-          </template>
-          <v-date-picker v-model="newRosterDate"></v-date-picker>
-        </v-menu>
-      </v-col>
-      <v-col cols="12" md="6">
-        <v-btn color="primary" @click="createRoster" :disabled="!newRosterDate">
-          Create Roster
-        </v-btn>
-      </v-col>
-    </v-row>
-    
+  <v-card>
+    <v-toolbar flat>
+      <v-toolbar-title>Rosters</v-toolbar-title>
+      <v-btn
+        prepend-icon="mdi-home"
+        class="ml-2"
+        variant="tonal"
+        color="blue-accent-2"
+        text="Home"
+        to="/home"
+      >
+        Home
+      </v-btn>
+      <v-spacer></v-spacer>
+      <v-menu>
+        <template #activator="{ props }">
+          <v-text-field
+            v-model="newRosterDate"
+            label="Select Date"
+            prepend-icon="mdi-calendar"
+            readonly
+            v-bind="props"
+            style="max-width: 200px;"
+            density="compact"
+            class="mr-4"
+          ></v-text-field>
+        </template>
+        <v-date-picker v-model="newRosterDate"></v-date-picker>
+      </v-menu>
+      <v-btn
+        color="primary"
+        @click="createRoster"
+        :disabled="!newRosterDate"
+        class="ml-2"
+      >
+        Create Roster
+      </v-btn>
+    </v-toolbar>
+
     <v-data-table
       :headers="headers"
       :items="rosters"
@@ -43,7 +59,7 @@
         </v-btn>
       </template>
     </v-data-table>
-  </div>
+  </v-card>
 </template>
 
 <script setup>
@@ -77,7 +93,8 @@ onMounted(loadRosters);
 
 async function createRoster() {
   try {
-    const res = await axios.post(BASE_URL, { date: newRosterDate.value });
+    const formattedDate = newRosterDate.value.toISOString().split('T')[0]; // Convert to YYYY-MM-DD
+    const res = await axios.post(BASE_URL, { date: formattedDate });
     rosters.value.push(res.data);
     newRosterDate.value = null;
   } catch (error) {
