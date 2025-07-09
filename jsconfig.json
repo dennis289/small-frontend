@@ -16,5 +16,8 @@
       "dom.iterable",
       "scripthost"
     ]
-  }
+  },
+  "exclude": [
+    "src/pages/roster.vue"
+  ]
 }

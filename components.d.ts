@@ -10,7 +10,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AppFooter: typeof import('./src/pages/services.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
-    Navbar: typeof import('./src/pages/people.vue')['default']
+    Navbar: typeof import('./src/components/navbar.vue')['default']
     PeopleManager: typeof import('./src/pages/people.vue')['default']
     RoleManager: typeof import('./src/pages/roles.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

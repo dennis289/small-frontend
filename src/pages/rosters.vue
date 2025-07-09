@@ -1,42 +1,34 @@
 <template>
   <v-card>
-    <v-toolbar flat>
-      <v-toolbar-title>Rosters</v-toolbar-title>
-      <v-btn
-        prepend-icon="mdi-home"
-        class="ml-2"
-        variant="tonal"
-        color="blue-accent-2"
-        text="Home"
-        to="/home"
-      >
-        Home
-      </v-btn>
-      <v-spacer></v-spacer>
-      <v-menu>
-        <template #activator="{ props }">
+    <v-card>
+    <v-card-title>
+      Rosters
+    </v-card-title>
+    <v-card-text>
+      <div class="text-right">
+          <v-btn
+            color="blue-accent-2"
+            variant="tonal"
+            prepend-icon="mdi-account-plus"
+            @click="openDialog"
+          >
+            Add Roster
+          </v-btn>
+        </div>
+        
           <v-text-field
-            v-model="newRosterDate"
-            label="Select Date"
-            prepend-icon="mdi-calendar"
-            readonly
-            v-bind="props"
-            style="max-width: 200px;"
-            density="compact"
-            class="mr-4"
+            v-model="search"
+            class="flex-grow-1 float-right"
+            label="Search"
+            width="350px"
+            prepend-icon="mdi-magnify"
+            clearable
+            @input="loadItems({ page: 1, itemsPerPage: 10 })"
           ></v-text-field>
-        </template>
-        <v-date-picker v-model="newRosterDate"></v-date-picker>
-      </v-menu>
-      <v-btn
-        color="primary"
-        @click="createRoster"
-        :disabled="!newRosterDate"
-        class="ml-2"
-      >
-        Create Roster
-      </v-btn>
-    </v-toolbar>
+        
+    
+    </v-card-text>
+   </v-card>
 
     <v-data-table
       :headers="headers"

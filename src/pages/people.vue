@@ -1,31 +1,34 @@
 <template>
   <v-card>
-    <v-toolbar flat>
-      <v-toolbar-title>People</v-toolbar-title>
-      <v-btn
-        prepend-icon="mdi-home"
-        class="ml-2"
-        variant="tonal"
-        color="blue-accent-2"
-        text="Home"
-        to="/home"
-      >Home</v-btn> 
-      <v-spacer></v-spacer>
-      <v-text-field
-        v-model="search"
-        append-inner-icon="mdi-magnify"
-        label="Search users"
-        single-line
-        hide-details
-        density="compact"
-        style="max-width: 250px;"
-      ></v-text-field>
-      <v-btn 
-        color="blue-accent-2" 
-        class="ml-4"
-        @click="openDialog"
-      >Add User</v-btn>
-    </v-toolbar>
+   <v-card>
+    <v-card-title>
+      People
+    </v-card-title>
+    <v-card-text>
+      <div class="text-right">
+          <v-btn
+            color="blue-accent-2"
+            variant="tonal"
+            prepend-icon="mdi-account-plus"
+            @click="openDialog"
+          >
+            Add Person
+          </v-btn>
+        </div>
+        
+          <v-text-field
+            v-model="search"
+            class="flex-grow-1 float-right"
+            label="Search"
+            width="350px"
+            prepend-icon="mdi-magnify"
+            clearable
+            @input="loadItems({ page: 1, itemsPerPage: 10 })"
+          ></v-text-field>
+        
+    
+    </v-card-text>
+   </v-card>
 
     <v-data-table-server
       :headers="headers"
