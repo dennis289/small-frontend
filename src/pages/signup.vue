@@ -75,6 +75,7 @@
             variant="elevated"
             density="compact"
             block
+            to ="/login"
             >Register</v-btn> 
             <br/>
             <div>
@@ -90,6 +91,7 @@
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
+import router from '@/router';
 
 const form = ref(null);
 const fullname = ref('');
@@ -121,6 +123,7 @@ async function onSubmit() {
         password.value = '';
         confirmPassword.value = '';
         console.log('Sign up successful:',response.data);
+        
     }
     catch (error) {
         console.error('Sign up failed:', error);

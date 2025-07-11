@@ -11,7 +11,7 @@
                 <p class="text-center">Please enter your credentials to register.</p>
             </v-card-text>
            <v-form 
-           v-model="form"
+           ref="form"
            @submit.prevent="onSubmit"
            class="d-flex flex-column gap-2"
             >
@@ -51,6 +51,7 @@
             density="compact"
             class="w-30"
             block
+            
             >Sign in</v-btn> 
             <br/>
             <div>
@@ -66,6 +67,7 @@
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
+import router from '@/router';
 
 const form = ref(null);
 const loading = ref(false);
@@ -76,8 +78,8 @@ const email = ref('');
 
 
 async function onSubmit() {
-    if (!form.value)
-    return
+    const { valid } = await form.value.validate();
+    if (!valid) return;
     loading.value = true;
     try {
         const response = await axios.post('http://localhost:8000/api/login/',{
@@ -88,6 +90,7 @@ async function onSubmit() {
         email.value = '';
         password.value = '';
         console.log('Login successful:', response.data);
+        router.push('/home');
     }
     catch (error){
         console.error('Login failed:', error);
