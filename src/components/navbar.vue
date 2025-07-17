@@ -45,9 +45,25 @@
             value="roles"
             @click="router.push('/roles')"
           ></v-list-item>
+
+          <v-list-item
+            prepend-icon="mdi-clock-outline"
+            title="Services"
+            value="services"
+            @click="router.push('/services')"
+          ></v-list-item>
+
+          <v-list-item
+            prepend-icon="mdi-sun-clock"
+            title="Rosters"
+            value="rosters"
+            @click="router.push('/rosters')"
+          ></v-list-item>
+
+
         </v-list>
       </v-navigation-drawer>
-      <v-main style="height: 250px"></v-main>
+      <v-main style="height: 100vh"></v-main>
     </v-layout>
   </v-card>
 </template>

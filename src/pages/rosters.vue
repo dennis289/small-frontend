@@ -1,100 +1,287 @@
 <template>
-  <v-card>
-    <v-card>
-    <v-card-title>
-      Rosters
-    </v-card-title>
-    <v-card-text>
-      <div class="text-right">
-          <v-btn
-            color="blue-accent-2"
-            variant="tonal"
-            prepend-icon="mdi-account-plus"
-            @click="openDialog"
-          >
-            Add Roster
-          </v-btn>
-        </div>
-        
-          <v-text-field
-            v-model="search"
-            class="flex-grow-1 float-right"
-            label="Search"
-            width="350px"
-            prepend-icon="mdi-magnify"
-            clearable
-            @input="loadItems({ page: 1, itemsPerPage: 10 })"
-          ></v-text-field>
-        
-    
-    </v-card-text>
-   </v-card>
+  <v-container>
+    <v-card class="pa-4">
+      <v-toolbar flat>
+        <v-toolbar-title>Generate Roster</v-toolbar-title>
+        <v-spacer />
+        <v-btn prepend-icon="mdi-home" to="/home" variant="tonal" color="blue-accent-2">Home</v-btn>
+      </v-toolbar>
 
-    <v-data-table
-      :headers="headers"
-      :items="rosters"
-      class="elevation-1"
-      density="compact"
-    >
-      <template #item.status="{ item }">
-        <v-chip :color="item.assignments.length ? 'success' : 'warning'">
-          {{ item.assignments.length ? 'Generated' : 'Pending' }}
-        </v-chip>
-      </template>
-      <template #item.actions="{ item }">
-        <v-btn 
-          color="primary" 
-          @click="goToRoster(item.id)"
-          size="small"
-        >
-          <v-icon>mdi-open-in-new</v-icon> Open
-        </v-btn>
-      </template>
-    </v-data-table>
-  </v-card>
+      <v-row class="mt-4">
+        <v-col cols="4">
+          <v-text-field
+          v-model="selectedDate"
+          variant="outlined"
+          type="date"
+          prepend-icon="mdi-calendar"
+          density="compact"
+          label="Select Date"
+          >
+
+          </v-text-field>
+        </v-col>
+        <v-col>
+          <v-row>
+            <v-col class="d-flex justify-end align-center">
+              <v-btn size="small" class="mr-4" variant="outlined" @click="showGenerateDialog = true" :disabled="!selectedDate">Generate Roster</v-btn>
+              <v-btn size="small" variant="outlined" @click="saveRoster" v-if="roster">Save Roster</v-btn>
+              <v-btn icon="mdi-file-pdf-box" @click="printRoster" v-if="roster"></v-btn>
+            </v-col>
+
+          </v-row>
+          
+        </v-col>
+      </v-row>
+
+      <div v-if="roster" ref="rosterRef">
+        <!-- Debug info (can be hidden in production) -->
+        <v-alert type="info" density="compact" class="mb-4" v-if="roster.metadata">
+          Generated: {{ new Date(roster.metadata.generated_at).toLocaleString() }} | 
+          Total Available: {{ roster.metadata.total_people_available }} | 
+          Total Assignments: {{ roster.metadata.total_assignments }}
+        </v-alert>
+
+        <!-- Leadership -->
+        <h3 class="mt-6">Producer: 
+          <v-edit-dialog v-model="roster.leadership.producer.name" v-if="roster.leadership">
+            {{ roster.leadership.producer?.name }}
+          </v-edit-dialog>
+          <span v-else>{{ roster.producer?.name }}</span>
+        </h3>
+        <h4>Assistant Producer: 
+          <v-edit-dialog v-model="roster.leadership.assistant_producer.name" v-if="roster.leadership">
+            {{ roster.leadership.assistant_producer?.name }}
+          </v-edit-dialog>
+          <span v-else>{{ roster.assistant_producer?.name }}</span>
+        </h4>
+
+        <!-- Services -->
+        <div v-for="service in roster.services" :key="service.service_id" class="mt-6">
+          <h4>{{ service.service_name }} 
+            <v-chip size="x-small" v-if="service.assignment_count">{{ service.assignment_count }} roles</v-chip>
+          </h4>
+          <v-table dense>
+            <thead>
+              <tr><th>Role</th><th>Person</th></tr>
+            </thead>
+            <tbody>
+              <tr v-for="assignment in service.assignments" :key="assignment.role">
+                <td>{{ assignment.role }}</td>
+                <td>
+                  <v-edit-dialog v-model="assignment.name">
+                    {{ assignment.name }}
+                  </v-edit-dialog>
+                </td>
+              </tr>
+            </tbody>
+          </v-table>
+        </div>
+
+        <!-- Special Roles -->
+        <div v-if="roster.special_roles || roster.hospitality" class="mt-6">
+          <h4>Hospitality</h4>
+          <v-chip-group>
+            <!-- New structure -->
+            <v-chip
+              v-for="person in roster.special_roles?.hospitality || []"
+              :key="person.person_id"
+              class="me-2"
+            >
+              <v-edit-dialog v-model="person.name">
+                {{ person.name }}
+              </v-edit-dialog>
+            </v-chip>
+            <!-- Fallback for old structure -->
+            <v-chip
+              v-for="(name, index) in roster.hospitality || []"
+              :key="index"
+              class="me-2"
+              v-if="!roster.special_roles"
+            >
+              <v-edit-dialog v-model="roster.hospitality[index]">
+                {{ name }}
+              </v-edit-dialog>
+            </v-chip>
+          </v-chip-group>
+        </div>
+
+        <div v-if="roster.special_roles || roster.social_media" class="mt-4">
+          <h4>Social Media</h4>
+          <v-chip-group>
+            <!-- New structure -->
+            <v-chip
+              v-for="person in roster.special_roles?.social_media || []"
+              :key="person.person_id"
+              class="me-2"
+            >
+              <v-edit-dialog v-model="person.name">
+                {{ person.name }}
+              </v-edit-dialog>
+            </v-chip>
+            <!-- Fallback for old structure -->
+            <v-chip
+              v-for="(name, index) in roster.social_media || []"
+              :key="index"
+              class="me-2"
+              v-if="!roster.special_roles"
+            >
+              <v-edit-dialog v-model="roster.social_media[index]">
+                {{ name }}
+              </v-edit-dialog>
+            </v-chip>
+          </v-chip-group>
+        </div>
+
+        <!-- Summary (optional, can be hidden) -->
+        <div v-if="roster.summary" class="mt-6">
+          <v-expansion-panels>
+            <v-expansion-panel>
+              <v-expansion-panel-title>
+                <v-icon>mdi-information</v-icon>
+                Roster Summary
+              </v-expansion-panel-title>
+              <v-expansion-panel-text>
+                <p><strong>People Assigned:</strong> {{ roster.summary.people_assigned?.length || 0 }}</p>
+                <p><strong>People Not Assigned:</strong> {{ roster.summary.people_not_assigned?.length || 0 }}</p>
+                <div v-if="roster.summary.people_not_assigned?.length > 0">
+                  <h6>Not Assigned:</h6>
+                  <v-chip
+                    v-for="person in roster.summary.people_not_assigned"
+                    :key="person.person_id"
+                    size="small"
+                    class="me-1 mb-1"
+                    color="warning"
+                  >
+                    {{ person.name }}
+                  </v-chip>
+                </div>
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+          </v-expansion-panels>
+        </div>
+      </div>
+
+      <v-alert v-else-if="error" type="error" class="mt-6">{{ error }}</v-alert>
+    </v-card>
+
+    <v-dialog v-model="showGenerateDialog" content-class="align-dialog" width="500">
+      <v-card>
+        <v-card-title>
+          Generate Roster
+          <v-btn icon="mdi-close" class="float-right" @click="showGenerateDialog = false"></v-btn>
+        </v-card-title>
+        <v-card-text>
+          <v-autocomplete
+            v-model="selectedMember"
+            label="Select Members Absent"
+            :items="members"
+            item-title="fullname"
+            item-value="id"
+            multiple
+            :loading="loadingMembers"
+            variant="outlined"
+            density="compact"
+            clearable
+            :no-data-text="loadingMembers ? 'Loading...' : 'No members found'"
+            ></v-autocomplete>
+          
+        </v-card-text>
+        <v-card-actions>
+          <v-btn size="small" variant="outlined" @click="showGenerateDialog = false">Cancel</v-btn>
+          <v-spacer /> <v-spacer />
+          <v-btn size="small" variant="flat" @click="generateRoster">Generate</v-btn>
+
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </v-container>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
-import { useRouter } from 'vue-router';
+import { onMounted, ref } from 'vue'
+import axios from 'axios'
+import { useRouter } from 'vue-router'
 
-const router = useRouter();
-const rosters = ref([]);
-const newRosterDate = ref(null);
+const router = useRouter()
+const selectedDate = ref(null)
+const roster = ref(null)
+const error = ref(null)
+const rosterRef = ref(null)
+const selectedMember = ref(null)
+const showGenerateDialog = ref(false)
+const members = ref([])
+const loadingMembers = ref(false)
+const BASE_URL = ('http://localhost:8000/api/')
 
-const headers = [
-  { title: 'Date', value: 'date' },
-  { title: 'Producer', value: 'producer_name' },
-  { title: 'Status', value: 'status', sortable: false },
-  { title: 'Actions', value: 'actions', sortable: false }
-];
+function formatDate(date) {
+  if (date instanceof Date) return date.toISOString().split('T')[0]
+  if (typeof date === 'string' && date.includes('T')) return date.split('T')[0]
+  return date
+}
 
-const BASE_URL = 'http://localhost:8000/api/rosters/';
-
-async function loadRosters() {
+async function generateRoster() {
+  error.value = null
+  roster.value = null
+  const payload = {
+    date: formatDate(selectedDate.value),
+    members: selectedMember.value,
+    is_present: false,
+  }
+  
   try {
-    const res = await axios.get(BASE_URL);
-    rosters.value = res.data;
-  } catch (error) {
-    console.error('Error loading rosters:', error);
+    const res = await axios.post(BASE_URL + 'rosters/generate/', payload)
+    roster.value = res.data
+  } catch (err) {
+    error.value = err.response?.data?.error || 'Failed to generate roster.'
   }
 }
 
-onMounted(loadRosters);
+function printRoster() {
+  const printContents = rosterRef.value.innerHTML
+  const printWindow = window.open('', '', 'height=600,width=800')
+  printWindow.document.open()
+  printWindow.document.title = 'Roster'
+  const body = printWindow.document.body
+  body.innerHTML = printContents
+  printWindow.document.close()
+  printWindow.print()
+}
 
-async function createRoster() {
+async function saveRoster() {
   try {
-    const formattedDate = newRosterDate.value.toISOString().split('T')[0]; // Convert to YYYY-MM-DD
-    const res = await axios.post(BASE_URL, { date: formattedDate });
-    rosters.value.push(res.data);
-    newRosterDate.value = null;
-  } catch (error) {
-    console.error('Error creating roster:', error);
+    const res = await axios.post( BASE_URL+'rosters/save/', {
+      date: formatDate(selectedDate.value),
+      data: roster.value,
+    })
+    alert('Roster saved successfully.')
+  } catch (err) {
+    alert('Failed to save roster.')
   }
 }
-
-function goToRoster(id) {
-  router.push(`/roster/${id}`);
+async function fetchMember() {
+  loadingMembers.value = true;
+  try {
+    const res = await axios.get(BASE_URL + 'persons/');
+    
+    members.value = res.data.map(m => ({
+      id: m.id,
+      fullname: `${m.first_name} ${m.last_name}`.trim()
+    }));
+    
+  } catch (error) {
+    console.error('Error fetching Members:', error);
+    
+    // Show user-friendly error
+    if (error.response?.status === 404) {
+      console.error('API endpoint not found');
+    } else if (error.response?.status >= 500) {
+      console.error('Server error');
+    } else {
+      console.error('Network or other error');
+    }
+  } finally {
+    loadingMembers.value = false;
+  }
 }
+onMounted(fetchMember);
 </script>

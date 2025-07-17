@@ -44,9 +44,9 @@
         <v-card-text>
           <v-form @submit.prevent="saveService">
             <v-text-field
-              v-model="form.name"
-              label="Service Name"
-              :rules="[v => !!v || 'Name is required']"
+              v-model="form.time"
+              label="Service Time"
+              :rules="[v => !!v || 'Time is required']"
               required
             ></v-text-field>
             <v-text-field
@@ -89,7 +89,7 @@
         <v-card-text>
           Are you sure you want to delete this service?
           <v-spacer></v-spacer>
-          <strong>{{ serviceToDelete?.name }}</strong>?
+          <strong>{{ serviceToDelete?.time }}</strong>?
           <br/>
           This action cannot be undone.
         </v-card-text>
@@ -129,12 +129,12 @@ const serviceToDelete = ref(null);
 const search = ref('');
 
 const form = ref({
-  name: '',
+  time: '',
   description: ''
 });
 
 const headers = [
-  { title: 'Name', value: 'name' },
+  { title: 'Time', value: 'time' },
   { title: 'Description', value: 'description' },
   { title: 'Actions', value: 'actions', sortable: false }
 ];
@@ -155,12 +155,12 @@ function openEditor(service) {
   if (service) {
     form.value = {
       id: service.id,
-      name: service.name,
-      order: service.description
+      time: service.time,
+      description: service.description
     };
   } else {
     form.value = {
-      name: '',
+      time: '',
       description: ''
     };
   }
@@ -169,15 +169,22 @@ function openEditor(service) {
 
 async function saveService() {
   try {
+    console.log('Form data:', form.value);
+    console.log('Edited service:', editedService.value);
+    
     if (editedService.value) {
-      await axios.put(BASE_URL + '/', { ...form.value, id: editedService.value.id });
+      const payload = { ...form.value, id: editedService.value.id };
+      console.log('PUT payload:', payload);
+      await axios.put(BASE_URL + '/', payload);
     } else {
+      console.log('POST payload:', form.value);
       await axios.post(BASE_URL + '/', form.value);
     }
     await loadData();
     editorDialog.value = false;
   } catch (error) {
     console.error('Error saving service:', error);
+    console.error('Error response:', error.response?.data);
   }
 }
 
