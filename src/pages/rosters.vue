@@ -22,10 +22,11 @@
         </v-col>
         <v-col>
           <v-row>
-            <v-col class="d-flex justify-end align-center">
+            <v-col class="d-flex justify-end align-center ma-2">
               <v-btn size="small" class="mr-4" variant="outlined" @click="showGenerateDialog = true" :disabled="!selectedDate">Generate Roster</v-btn>
               <v-btn size="small" variant="outlined" @click="saveRoster" v-if="roster">Save Roster</v-btn>
-              <v-btn icon="mdi-file-pdf-box" @click="printRoster" v-if="roster"></v-btn>
+              <v-btn size="small" variant="outlined" prepend-icon="mdi-file-pdf-box" @click="downloadRosterPDF" v-if="roster">Download PDF</v-btn>
+              <v-btn size="small" variant="outlined" icon="mdi-printer" @click="printRoster" v-if="roster" title="Print Roster"></v-btn>
             </v-col>
 
           </v-row>
@@ -231,8 +232,10 @@ async function generateRoster() {
   try {
     const res = await axios.post(BASE_URL + 'rosters/generate/', payload)
     roster.value = res.data
+    showGenerateDialog.value = false // Close dialog on successful generation
   } catch (err) {
     error.value = err.response?.data?.error || 'Failed to generate roster.'
+    // Keep dialog open on error so user can see the error and try again
   }
 }
 
@@ -245,6 +248,45 @@ function printRoster() {
   body.innerHTML = printContents
   printWindow.document.close()
   printWindow.print()
+}
+
+async function downloadRosterPDF() {
+  if (!roster.value) {
+    alert('No roster to download. Please generate a roster first.');
+    return;
+  }
+
+  try {
+    const response = await axios.post(BASE_URL + 'generate-roster/', {
+      roster_data: roster.value,
+      date: formatDate(selectedDate.value)
+    }, {
+      responseType: 'blob' // Important for PDF download
+    });
+
+    // Create blob link to download
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    
+    // Create filename with date
+    const dateStr = formatDate(selectedDate.value) || new Date().toISOString().split('T')[0];
+    link.setAttribute('download', `roster_${dateStr}.pdf`);
+    
+    // Append to html link element page
+    document.body.appendChild(link);
+    
+    // Start download
+    link.click();
+    
+    // Clean up and remove the link
+    link.parentNode.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+  } catch (error) {
+    console.error('Error downloading PDF:', error);
+    alert('Failed to download PDF. Please try again.');
+  }
 }
 
 async function saveRoster() {
