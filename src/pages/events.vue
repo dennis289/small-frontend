@@ -37,7 +37,7 @@
       <v-card>
         <v-toolbar flat>
           <v-toolbar-title>
-            {{ editedService ? 'Edit Service' : 'Add New Service' }}
+            {{ editedEvent ? 'Edit Event' : 'Add New Event' }}
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-btn icon @click="editorDialog = false">
@@ -45,10 +45,10 @@
           </v-btn>
         </v-toolbar>
         <v-card-text>
-          <v-form @submit.prevent="saveService">
+          <v-form @submit.prevent="saveEvent">
             <v-text-field
               v-model="form.name"
-              label="Service Name"
+              label="Event Name"
               rounded="lg"
               variant="outlined"
               :rules="[v => !!v || 'Name is required']"
@@ -119,7 +119,7 @@
 
       <v-data-table
         :headers="headers"
-        :items="services"
+        :items="events"
         class="elevation-1"
         density="compact"
       >
@@ -138,9 +138,9 @@
           Confirm Delete
         </v-card-title>
         <v-card-text>
-          Are you sure you want to delete this service?
+          Are you sure you want to delete this event?
           <v-spacer></v-spacer>
-          <strong>{{ serviceToDelete?.time }}</strong>?
+          <strong>{{ eventToDelete?.name }}</strong>?
           <br/>
           This action cannot be undone.
         </v-card-text>
@@ -155,7 +155,7 @@
           <v-btn
             color="red-accent-2"
             variant="text"
-            @click="deleteService"
+            @click="deleteEvent"
             text="Delete"
           ></v-btn>
         </v-card-actions> 
@@ -169,15 +169,15 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8000/api/services';
+const BASE_URL = 'http://localhost:8000/api/events';
 
-const services = ref([]);
+const events = ref([]);
 const editorDialog = ref(false);
-const editedService = ref(null);
+const editedEvent = ref(null);
 const deleteDialog = ref(false);
 const startTimeDialog = ref(false);
 const endTimeDialog = ref(false);
-const serviceToDelete = ref(null);
+const eventToDelete = ref(null);
 const search = ref('');
 const form = ref({
   name: '',
@@ -197,24 +197,24 @@ const headers = [
 async function loadData() {
   try {
     const res = await axios.get(BASE_URL + '/');
-    services.value = res.data;
+    events.value = res.data;
     console.log('Api response:', res.data);
   } catch (error) {
-    console.error('Error loading services:', error);
+    console.error('Error loading events:', error);
   }
 }
  
 
 onMounted(loadData);
 
-function openEditor(service) {
-  editedService.value = service;
-  if (service) {
+function openEditor(event) {
+  editedEvent.value = event;
+  if (event) {
     form.value = {
-      name: service.name,
-      start_time: service.start_time,
-      end_time: service.end_time,
-      description: service.description
+      name: event.name,
+      start_time: event.start_time,
+      end_time: event.end_time,
+      description: event.description
     };
   } else {
     form.value = {
@@ -225,16 +225,16 @@ function openEditor(service) {
     };
   }
   editorDialog.value = true;
-  console.log('Opening editor for service:', service);
+  console.log('Opening editor for event:', event);
 }
 
-async function saveService() {
+async function saveEvent() {
   try {
     console.log('Form data:', form.value);
-    console.log('Edited service:', editedService.value);
+    console.log('Edited event:', editedEvent.value);
     
-    if (editedService.value) {
-      const payload = { ...form.value, id: editedService.value.id };
+    if (editedEvent.value) {
+      const payload = { ...form.value, id: editedEvent.value.id };
       console.log('PUT payload:', payload);
       await axios.put(BASE_URL + '/', payload);
     } else {
@@ -244,24 +244,24 @@ async function saveService() {
     await loadData();
     editorDialog.value = false;
   } catch (error) {
-    console.error('Error saving service:', error);
+    console.error('Error saving event:', error);
     console.error('Error response:', error.response?.data);
   }
 }
 
-function confirmDelete(service) {
-  serviceToDelete.value = service;
+function confirmDelete(event) {
+  eventToDelete.value = event;
   deleteDialog.value = true;
 }
 
-async function deleteService() {
+async function deleteEvent() {
   try {
-    await axios.delete(BASE_URL + '/', { data: { id: serviceToDelete.value.id } });
-    services.value = services.value.filter(s => s.id !== serviceToDelete.value.id);
+    await axios.delete(BASE_URL + '/', { data: { id: eventToDelete.value.id } });
+    events.value = events.value.filter(s => s.id !== eventToDelete.value.id);
     deleteDialog.value = false;
-    serviceToDelete.value = null;
+    eventToDelete.value = null;
   } catch (error) {
-    console.error('Error deleting service:', error);
+    console.error('Error deleting event:', error);
   }
 }
 </script>

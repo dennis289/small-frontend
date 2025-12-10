@@ -42,9 +42,9 @@ const routes = [
     component: () => import('@/pages/roles.vue')
   },
   {
-    path: '/services',
-    name: 'Services',
-    component: () => import('@/pages/services.vue')
+    path: '/events',
+    name: 'Events',
+    component: () => import('@/pages/events.vue')
   },
   {
     path: '/rosters',

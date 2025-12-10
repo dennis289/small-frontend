@@ -345,7 +345,7 @@ async function fetchMember() {
 async function fetchEvents() {
   loadingEvents.value = true;
   try {
-    const res = await axios.get(BASE_URL + 'services/');
+    const res = await axios.get(BASE_URL + 'events/');
     events.value = res.data;
   } catch (error) {
     console.error('Error fetching Events:', error);
