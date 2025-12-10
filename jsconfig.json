@@ -18,6 +18,8 @@
     ]
   },
   "exclude": [
-    "src/pages/roster.vue"
+    "src/pages/roster.vue",
+    "src/pages/availability.vue",
+    "src/pages/signup2.vue"
   ]
 }
