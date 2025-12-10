@@ -16,8 +16,8 @@
            class="d-flex flex-column gap-2"
             >
             <v-text-field
-            color="grey darken-2"
             v-model="email"
+            color="grey darken-2"
             :readonly="loading"
             :rules="[required]"
             class="mb-4"
@@ -30,15 +30,16 @@
             <v-text-field
             color="grey darken-2"
             v-model="password"
-            :rules="[required, matchPassword]"
+            
             :type="showPassword ? 'text' : 'password'"
-            class="mb-4"
             label="Password"
+            class="mb-4"
             density="compact"
             variant="outlined"
             clearable
-            :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-            @click:append="showPassword = !showPassword"
+            :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+            @click:append-inner="showPassword = !showPassword"
+            @keyup.enter="onSubmit"
         ></v-text-field>
         <v-spacer></v-spacer>
             <v-btn
@@ -67,40 +68,44 @@
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
-import router from '@/router';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const form = ref(null);
 const loading = ref(false);
 const showPassword = ref(false);
 const password = ref('');
 const email = ref('');
 
-
-
 async function onSubmit() {
     const { valid } = await form.value.validate();
     if (!valid) return;
     loading.value = true;
     try {
-        const response = await axios.post('http://localhost:8000/api/login/',{
+        const response = await axios.post('http://localhost:8000/api/login/', {
             email: email.value,
             password: password.value
         });
+        // store the token 
+        if (response.data.token || response.data.access) {
+            localStorage.setItem('auth_token', response.data.token || response.data.access);
+        }
 
         email.value = '';
+        loading.value = false;
         password.value = '';
         console.log('Login successful:', response.data);
         router.push('/home');
-    }
-    catch (error){
+    } catch (error) {
+        loading.value = false;
         console.error('Login failed:', error);
-    }
-    finally{
-        loading.value =  false;
+    } finally {
+        loading.value = false;
     }
 }
 
 function required(value){
     return !!value || 'Field is required'
 }
+
 </script>

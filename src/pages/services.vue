@@ -1,36 +1,39 @@
 <template>
   <v-card>
-    <v-toolbar flat>
-      <v-toolbar-title>Services</v-toolbar-title>
-      <v-btn
-        prepend-icon="mdi-home"
-        class="ml-2"
-        variant="tonal"
-        color="blue-accent-2"
-        text="Home"
-        to="/home"
-      >Home</v-btn> 
+    <v-card>
+      <v-card-title class="text-h5 text-center mb-4 " color="grey darken-1">
+        Event Management
+      </v-card-title>
       <v-spacer></v-spacer>
-      <v-text-field
-        v-model="search"
-        append-inner-icon="mdi-magnify"
-        label="Search services"
-        single-line
-        hide-details
-        density="compact"
-        style="max-width: 250px;"
-      ></v-text-field>
-      <v-btn
-        color="blue-accent-2"
-        @click="openEditor(null)"
-        class="ml-4"
-      >
-        Add Service
-      </v-btn>
-    </v-toolbar>
-    <v-dialog 
-    v-model="editorDialog" 
-    max-width="600">
+      <v-card-text>
+        <div class="text-right">
+          <v-btn
+            color="#FFD54F"
+            rounded="lg"
+            variant="tonal"
+            prepend-icon="mdi-plus-box"
+            @click="openEditor(null)"
+          >
+            Add Event
+          </v-btn>
+        </div>
+        <v-text-field
+            v-model="search"
+            rounded="lg"
+            class="flex-grow-1 float-right mt-4 mb-4"
+            label="Search Events"
+            variant="outlined"
+            width="350px"
+            append-inner-icon="mdi-magnify"
+            clearable
+            @input="loadItems({ page: 1, itemsPerPage: 10 })"
+          ></v-text-field>
+      </v-card-text>
+      </v-card>
+    <v-divider></v-divider>
+      <v-dialog 
+      v-model="editorDialog" 
+      max-width="600">
       <v-card>
         <v-toolbar flat>
           <v-toolbar-title>
@@ -44,34 +47,82 @@
         <v-card-text>
           <v-form @submit.prevent="saveService">
             <v-text-field
-              v-model="form.time"
-              label="Service Time"
-              :rules="[v => !!v || 'Time is required']"
+              v-model="form.name"
+              label="Service Name"
+              rounded="lg"
+              variant="outlined"
+              :rules="[v => !!v || 'Name is required']"
               required
             ></v-text-field>
+            <v-row>
+              <v-col>
+            <v-text-field
+              v-model="form.start_time"
+              append-inner-icon="mdi-clock-time-four-outline"
+              label="Start Time"
+              variant="outlined"
+              rounded="lg"
+              :rules="[v => !!v || 'Start time is required']"
+              required
+
+              readonly
+            >
+            <v-dialog v-model="startTimeDialog" activator="parent" width="auto">
+            <v-time-picker 
+            v-model="form.start_time"
+            ></v-time-picker>
+          </v-dialog>
+          </v-text-field>
+          </v-col>
+          <v-col>
+            <v-text-field
+              v-model="form.end_time"
+              append-inner-icon="mdi-clock-time-four-outline"
+              label="End Time"
+              variant="outlined"
+              rounded="lg"
+              :rules="[v => !!v || 'End time is required']"
+              required
+              readonly
+               >
+              <v-dialog v-model="endTimeDialog" activator="parent" width="auto">
+                <v-time-picker v-model="form.end_time"
+                ></v-time-picker>
+              </v-dialog>
+            </v-text-field>
+          </v-col>
+            </v-row>
             <v-text-field
               v-model="form.description"
               label="Description"
+              rounded="lg"
+              variant="outlined"
               type="text"
               :rules="[v => !!v || 'Description is required']"
               required
             ></v-text-field>
-            <v-card-actions>
+            <v-card-actions 
+              class="justify-space-between">
               <v-spacer></v-spacer>
-              <v-btn color="secondary" @click="editorDialog = false">Cancel</v-btn>
-              <v-btn color="primary" type="submit">Save</v-btn>
+              <v-btn color="secondary" 
+              @click="editorDialog = false"
+              >Cancel</v-btn>
+              <v-btn color="primary" 
+              type="submit"
+              >Save</v-btn>
             </v-card-actions>
+            
           </v-form>
         </v-card-text>
-      </v-card>
-    </v-dialog>
+        </v-card>
+      </v-dialog>
 
-    <v-data-table
-      :headers="headers"
-      :items="services"
-      class="elevation-1"
-      density="compact"
-    >
+      <v-data-table
+        :headers="headers"
+        :items="services"
+        class="elevation-1"
+        density="compact"
+      >
       <template #item.actions="{ item }">
         <v-btn icon size="small" @click="openEditor(item)">
           <v-icon>mdi-pencil</v-icon>
@@ -117,7 +168,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { de } from 'vuetify/locale';
 
 const BASE_URL = 'http://localhost:8000/api/services';
 
@@ -125,16 +175,21 @@ const services = ref([]);
 const editorDialog = ref(false);
 const editedService = ref(null);
 const deleteDialog = ref(false);
+const startTimeDialog = ref(false);
+const endTimeDialog = ref(false);
 const serviceToDelete = ref(null);
 const search = ref('');
-
 const form = ref({
-  time: '',
+  name: '',
+  start_time: '',
+  end_time: '',
   description: ''
 });
 
 const headers = [
-  { title: 'Time', value: 'time' },
+  { title: 'Name', value: 'name' },
+  {title: 'Start time', value: 'start_time' },
+  { title: 'End time', value: 'end_time' },
   { title: 'Description', value: 'description' },
   { title: 'Actions', value: 'actions', sortable: false }
 ];
@@ -143,10 +198,12 @@ async function loadData() {
   try {
     const res = await axios.get(BASE_URL + '/');
     services.value = res.data;
+    console.log('Api response:', res.data);
   } catch (error) {
     console.error('Error loading services:', error);
   }
 }
+ 
 
 onMounted(loadData);
 
@@ -154,17 +211,21 @@ function openEditor(service) {
   editedService.value = service;
   if (service) {
     form.value = {
-      id: service.id,
-      time: service.time,
+      name: service.name,
+      start_time: service.start_time,
+      end_time: service.end_time,
       description: service.description
     };
   } else {
     form.value = {
-      time: '',
+      name: '',
+      start_time: '',
+      end_time: '',
       description: ''
     };
   }
   editorDialog.value = true;
+  console.log('Opening editor for service:', service);
 }
 
 async function saveService() {

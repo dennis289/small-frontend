@@ -1,27 +1,31 @@
 <template>
   <v-card>
    <v-card>
-    <v-card-title>
-      People
+    <v-card-title class="text-h5 text-center mb-4 " color="grey darken-4">
+      Members Management
     </v-card-title>
     <v-card-text>
       <div class="text-right">
           <v-btn
-            color="blue-accent-2"
+            color="#FFD54F"
+            rounded="lg"
             variant="tonal"
             prepend-icon="mdi-account-plus"
             @click="openDialog"
           >
             Add Person
           </v-btn>
+          
         </div>
         
           <v-text-field
             v-model="search"
-            class="flex-grow-1 float-right"
+            rounded="lg"
+            class="flex-grow-1 float-right mt-4 mb-4"
             label="Search"
+            variant="outlined"
             width="350px"
-            prepend-icon="mdi-magnify"
+            append-inner-icon="mdi-magnify"
             clearable
             @input="loadItems({ page: 1, itemsPerPage: 10 })"
           ></v-text-field>
@@ -30,7 +34,7 @@
     </v-card-text>
    </v-card>
 
-    <v-data-table-server
+    <v-data-table
       :headers="headers"
       :items="serverItems"
       :items-length="totalItems"
@@ -60,7 +64,7 @@
         <v-btn icon="mdi-pencil" size="small" @click="editUser(item)"></v-btn>
         <v-btn icon="mdi-delete" size="small" @click="confirmDelete(item)"></v-btn>
       </template>
-    </v-data-table-server>
+    </v-data-table>
 
     <!-- Add/Edit Dialog -->
     <v-dialog v-model="dialog" max-width="600">
@@ -70,74 +74,91 @@
       >
         <v-card-text>
           <v-row dense>
-            <v-col cols="12" md="4" sm="6">
+            <v-col cols="12" md="6" >
               <v-text-field
                 label="First Name*"
+                variant="outlined"
                 v-model="form.first_name"
                 required
               ></v-text-field>
             </v-col>
-            <v-col cols="12" md="4" sm="6">
+            <v-col cols="12" md="6">
               <v-text-field
                 label="Last Name*"
+                variant="outlined"
                 v-model="form.last_name"
                 required
               ></v-text-field>
             </v-col>
-            <v-col cols="12" md="4" sm="6">
+            <v-col cols="12" md="6">
               <v-text-field
                 label="Email*"
+                variant="outlined"
                 v-model="form.email"
                 required
               ></v-text-field>
             </v-col>
-            <v-col cols="12" md="4" sm="6">
+            <v-col cols="12" md="6">
               <v-text-field
                 label="Phone*"
+                variant="outlined"
                 v-model="form.phone_number"
                 required
               ></v-text-field>
             </v-col>
-            <v-col cols="12" md="4" sm="6">
+            <v-col cols="12" md="6">
               <v-text-field
                 label="Area of residence*"
+                variant="outlined"
                 v-model="form.area_of_residence"
                 required
               ></v-text-field>
             </v-col>
-            <v-col cols="12" md="4" sm="6">
+            <v-col cols="12" md="6">
               <v-checkbox
                 label="Is Producer"
                 v-model="form.is_producer"
                 color="blue-accent-2"
               ></v-checkbox>
             </v-col>
-            <v-col cols="12" sm="6">
+            <v-col cols="12" >
               <v-autocomplete
                 :items="rolesList"
                 item-title="name"
                 item-value="id"
                 label="Roles"
                 v-model="form.roles"
+                closable-chips
                 multiple
                 clearable
-              ></v-autocomplete>
+              >
+              <template v-slot:selection="{item, index}">
+                <v-chip v-if="index < 3" :text="item.title" :key="index" small>
+                
+                </v-chip>
+                <span v-else-if="index === 3" class="grey--text text--darken-1"
+                  >+{{ form.roles.length - 3 }} more</span>
+              </template>
+            </v-autocomplete>
             </v-col>
           </v-row>
           <small class="text-caption text-medium-emphasis">* indicates required fields</small>
         </v-card-text>
         <v-divider></v-divider>
-        <v-card-actions>
+        <v-card-actions class="justify-space-between">
           <v-btn
-            variant="plain"
-            color="red-accent-2"
+            variant="tonal"
+            density="comfortable"
+            color="grey-accent-2"
             text="Cancel"
             class="ml-2"
             @click="closeDialog"
           ></v-btn>       
           <v-btn
             variant="tonal"
-            color="green-accent-2"
+            color="grey-brighten-1"
+            density="comfortable"
+            class="mr-2"
             @click="saveUser"
           >
             {{ editingId ? 'Update' : 'Add' }} User
@@ -153,7 +174,7 @@
           Confirm Delete
         </v-card-title>
         <v-card-text>
-          Are you sure you want to delete this person?
+          Are you sure you want to delete this person
           <v-spacer></v-spacer>
           <strong>{{ userToDelete?.first_name }} {{ userToDelete?.last_name }}</strong>?
           <br/>

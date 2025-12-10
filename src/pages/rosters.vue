@@ -10,9 +10,9 @@
       <v-row class="mt-4">
         <v-col cols="4">
           <v-text-field
+          type="date"
           v-model="selectedDate"
           variant="outlined"
-          type="date"
           prepend-icon="mdi-calendar"
           density="compact"
           label="Select Date"
@@ -185,7 +185,20 @@
             clearable
             :no-data-text="loadingMembers ? 'Loading...' : 'No members found'"
             ></v-autocomplete>
-          
+
+          <v-autocomplete
+            v-model="selectedEvent"
+            label="Select active events"
+            :items="events"
+            item-title="name"
+            item-value="id"
+            multiple
+            :loading="loadingEvents"
+            variant="outlined"
+            density="compact"
+            clearable
+            :no-data-text="loadingEvents ? 'Loading...' : 'No events found'"
+            ></v-autocomplete>
         </v-card-text>
         <v-card-actions>
           <v-btn size="small" variant="outlined" @click="showGenerateDialog = false">Cancel</v-btn>
@@ -209,9 +222,12 @@ const roster = ref(null)
 const error = ref(null)
 const rosterRef = ref(null)
 const selectedMember = ref(null)
+const selectedEvent = ref(null)
 const showGenerateDialog = ref(false)
 const members = ref([])
 const loadingMembers = ref(false)
+const events = ref([])
+const loadingEvents = ref(false)
 const BASE_URL = ('http://localhost:8000/api/')
 
 function formatDate(date) {
@@ -226,6 +242,7 @@ async function generateRoster() {
   const payload = {
     date: formatDate(selectedDate.value),
     members: selectedMember.value,
+    events: selectedEvent.value,
     is_present: false,
   }
   
@@ -325,5 +342,17 @@ async function fetchMember() {
     loadingMembers.value = false;
   }
 }
+async function fetchEvents() {
+  loadingEvents.value = true;
+  try {
+    const res = await axios.get(BASE_URL + 'services/');
+    events.value = res.data;
+  } catch (error) {
+    console.error('Error fetching Events:', error);
+  } finally {
+    loadingEvents.value = false;
+  }
+}
+onMounted(fetchEvents);
 onMounted(fetchMember);
 </script>

@@ -123,6 +123,8 @@ async function onSubmit() {
         password.value = '';
         confirmPassword.value = '';
         console.log('Sign up successful:',response.data);
+
+        router.push('/login');
         
     }
     catch (error) {

@@ -1,19 +1,95 @@
 /**
  * router/index.ts
  *
- * Automatic routes for `./src/pages/*.vue`
+ * Manual routes configuration
  */
 
 // Composables
-import { createRouter, createWebHistory } from 'vue-router/auto'
-import { routes } from 'vue-router/auto-routes'
+import { createRouter, createWebHistory } from 'vue-router'
+
+const routes = [
+  {
+    path: '/',
+    redirect: '/login'
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/login'  
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/pages/login.vue')
+  },
+  {
+    path: '/signup',
+    name: 'Signup',
+    component: () => import('@/pages/signup.vue')
+  },
+  {
+    path: '/home',
+    name: 'Home',
+    component: () => import('@/pages/home.vue')
+  },
+  {
+    path: '/people',
+    name: 'People',
+    component: () => import('@/pages/people.vue')
+  },
+  {
+    path: '/roles',
+    name: 'Roles',
+    component: () => import('@/pages/roles.vue')
+  },
+  {
+    path: '/services',
+    name: 'Services',
+    component: () => import('@/pages/services.vue')
+  },
+  {
+    path: '/rosters',
+    name: 'Rosters',
+    component: () => import('@/pages/rosters.vue')
+  }
+]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
 })
 
-// Workaround for https://github.com/vitejs/vite/issues/11804
+// Authentication guard
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('auth_token');
+  const isAuthenticated = !!token;
+
+  // pages that don't require authentication
+  const publicPages = ['/login', '/signup'];
+  const isPublicPage = publicPages.includes(to.path);
+
+  // redirect to login if not authenticated and trying to access a restricted page
+  if (to.path === '/'){
+    if (isAuthenticated) {
+      next('/home')
+    } else{
+      next('/login')
+    }
+    return
+  }
+  
+  // if not authenticated and trying to access protected page
+  if (!isAuthenticated && !isPublicPage) {
+    return next('/login');
+  }
+  
+  // if authenticated and trying to access public page, redirect to home
+  if (isAuthenticated && isPublicPage) {
+    return next('/home');
+  }
+  
+  next();
+}
+)
 router.onError((err, to) => {
   if (err?.message?.includes?.('Failed to fetch dynamically imported module')) {
     if (localStorage.getItem('vuetify:dynamic-reload')) {

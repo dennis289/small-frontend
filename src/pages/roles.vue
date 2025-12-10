@@ -77,7 +77,7 @@
               <v-checkbox 
                 label="Is Special Role" 
                 v-model="form.is_special_role" 
-                color="blue-accent-2"
+                color="#2196F3"
               ></v-checkbox>
             </v-col>
           </v-row>
@@ -158,7 +158,6 @@ const form = ref({
 
 // Table headers
 const headers = [
-  { title: 'Role ID', value: 'id', sortable: true },
   { title: 'Role Name', value: 'name' },
   { title: 'Description', value: 'description' },
   { title: 'Is Special Role', value: 'is_special_role', sortable: false },
