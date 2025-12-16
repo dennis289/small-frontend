@@ -118,7 +118,12 @@
               <v-checkbox
                 label="Is Producer"
                 v-model="form.is_producer"
-                color="blue-accent-2"
+                color="#EF6C00"
+              ></v-checkbox>
+              <v-checkbox
+                label="Is Assistant Producer"
+                v-model="form.is_assistant_producer"
+                color="#EF6C00"
               ></v-checkbox>
             </v-col>
             <v-col cols="12" >
@@ -223,6 +228,7 @@ const form = ref({
   phone_number: '',
   area_of_residence: '',
   is_producer: false,
+  is_assistant_producer: false,
   roles: [],
 });
 
@@ -275,6 +281,7 @@ function openDialog() {
     phone_number: '',
     area_of_residence: '',
     is_producer: false,
+    is_assistant_producer: false,
     roles: [],
   };
   dialog.value = true;
@@ -293,6 +300,7 @@ function editUser(item) {
     phone_number: item.phone_number,
     area_of_residence: item.area_of_residence,
     is_producer: item.is_producer,
+    is_assistant_producer: item.is_assistant_producer,
     roles: item.roles || []
   };
   editingId.value = item.id;

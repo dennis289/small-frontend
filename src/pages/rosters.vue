@@ -23,10 +23,10 @@
         <v-col>
           <v-row>
             <v-col class="d-flex justify-end align-center ma-2">
-              <v-btn size="small" class="mr-4" variant="outlined" @click="showGenerateDialog = true" :disabled="!selectedDate">Generate Roster</v-btn>
-              <v-btn size="small" variant="outlined" @click="saveRoster" v-if="roster">Save Roster</v-btn>
-              <v-btn size="small" variant="outlined" prepend-icon="mdi-file-pdf-box" @click="downloadRosterPDF" v-if="roster">Download PDF</v-btn>
-              <v-btn size="small" variant="outlined" icon="mdi-printer" @click="printRoster" v-if="roster" title="Print Roster"></v-btn>
+              <v-btn size="small" class="ma-2" variant="outlined" @click="showGenerateDialog = true" :disabled="!selectedDate">Generate Roster</v-btn>
+              <v-btn size="small" variant="outlined" class="ma-2" @click="saveRoster" v-if="roster">Save Roster</v-btn>
+              <v-btn size="small" variant="outlined" class="ma-2" prepend-icon="mdi-file-pdf-box" @click="downloadRosterPDF" v-if="roster">Download PDF</v-btn>
+              <v-btn size="small" variant="outlined" icon="mdi-printer" class="ma-2" @click="printRoster" v-if="roster" title="Print Roster"></v-btn>
             </v-col>
 
           </v-row>
@@ -57,16 +57,16 @@
         </h4>
 
         <!-- Services -->
-        <div v-for="service in roster.services" :key="service.service_id" class="mt-6">
-          <h4>{{ service.service_name }} 
-            <v-chip size="x-small" v-if="service.assignment_count">{{ service.assignment_count }} roles</v-chip>
+        <div v-for="event in roster.events" :key="event.event_id" class="mt-6">
+          <h4>{{ event.event_name }} 
+            <v-chip size="x-small" v-if="event.assignment_count">{{ event.assignment_count }} roles</v-chip>
           </h4>
           <v-table dense>
             <thead>
               <tr><th>Role</th><th>Person</th></tr>
             </thead>
             <tbody>
-              <tr v-for="assignment in service.assignments" :key="assignment.role">
+              <tr v-for="assignment in event.assignments" :key="assignment.role">
                 <td>{{ assignment.role }}</td>
                 <td>
                   <v-edit-dialog v-model="assignment.name">
@@ -247,7 +247,7 @@ async function generateRoster() {
   }
   
   try {
-    const res = await axios.post(BASE_URL + 'rosters/generate/', payload)
+    const res = await axios.post(BASE_URL + 'rosters/', payload)
     roster.value = res.data
     showGenerateDialog.value = false // Close dialog on successful generation
   } catch (err) {

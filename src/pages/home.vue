@@ -370,6 +370,9 @@ const memberDialog = ref(false);
 const roleDialog = ref(false);
 const rolesList = ref([]);
 const eventDialog = ref(false);
+const startTimeDialog = ref(false);
+const endTimeDialog = ref(false);
+
 
 
 const form = ref({
