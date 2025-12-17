@@ -2,9 +2,8 @@
   <v-container>
     <v-card class="pa-4">
       <v-toolbar flat>
-        <v-toolbar-title>Generate Roster</v-toolbar-title>
+        <v-toolbar-title class="text-h5 text-center" color="grey darken-4">Generate Roster</v-toolbar-title>
         <v-spacer />
-        <v-btn prepend-icon="mdi-home" to="/home" variant="tonal" color="blue-accent-2">Home</v-btn>
       </v-toolbar>
 
       <v-row class="mt-4">
@@ -186,9 +185,9 @@
             :no-data-text="loadingMembers ? 'Loading...' : 'No members found'"
             ></v-autocomplete>
 
-          <v-autocomplete
+            <v-autocomplete
             v-model="selectedEvent"
-            label="Select active events"
+            label="Select Events Absent"
             :items="events"
             item-title="name"
             item-value="id"
@@ -199,6 +198,7 @@
             clearable
             :no-data-text="loadingEvents ? 'Loading...' : 'No events found'"
             ></v-autocomplete>
+            
         </v-card-text>
         <v-card-actions>
           <v-btn size="small" variant="outlined" @click="showGenerateDialog = false">Cancel</v-btn>
@@ -244,6 +244,7 @@ async function generateRoster() {
     members: selectedMember.value,
     events: selectedEvent.value,
     is_present: false,
+    is_active: false,
   }
   
   try {

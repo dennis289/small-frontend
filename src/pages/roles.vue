@@ -1,13 +1,13 @@
 <template>
   <v-card>
     <v-card>
-    <v-card-title>
+    <v-card-title class="text-h5 text-center mb-4" color="grey darken-4">
       Role
     </v-card-title>
     <v-card-text>
       <div class="text-right">
           <v-btn
-            color="blue-accent-2"
+            color="#FFD54F"
             variant="tonal"
             prepend-icon="mdi-account-plus"
             @click="openDialog"

@@ -45,7 +45,7 @@
     >
       <template #item.is_producer="{ item }">
         <v-chip
-          :color="item.is_producer ? 'green' : 'grey'"
+          :color="item.is_producer ? '#757575' : '#795548'"
           size="small"
           variant="flat"
         >
