@@ -48,8 +48,8 @@
             density="compact"
             variant="outlined"
             clearable
-            :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-            @click:append="showPassword = !showPassword"
+            :prepend-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+            @click:prepend-inner="showPassword = !showPassword"
         ></v-text-field>
 
         <v-text-field
@@ -75,7 +75,6 @@
             variant="elevated"
             density="compact"
             block
-            to ="/login"
             >Register</v-btn> 
             <br/>
             <div>
@@ -91,8 +90,8 @@
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
-import router from '@/router';
-
+import { useRouter } from 'vue-router';
+const router = useRouter();
 const form = ref(null);
 const fullname = ref('');
 const password = ref('');
@@ -117,7 +116,7 @@ async function onSubmit() {
             password: password.value,
             confirmPassword: confirmPassword.value
         });
-        username.value = '';
+        
         fullname.value = '';
         email.value = '';
         password.value = '';

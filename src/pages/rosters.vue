@@ -187,7 +187,7 @@
 
             <v-autocomplete
             v-model="selectedEvent"
-            label="Select Events Absent"
+            label="Select Events Inactive"
             :items="events"
             item-title="name"
             item-value="id"
@@ -215,6 +215,7 @@
 import { onMounted, ref } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+import { toast } from 'vue-sonner'
 
 const router = useRouter()
 const selectedDate = ref(null)
@@ -244,15 +245,17 @@ async function generateRoster() {
     members: selectedMember.value,
     events: selectedEvent.value,
     is_present: false,
-    is_active: false,
+    is_active: true,
   }
   
   try {
     const res = await axios.post(BASE_URL + 'rosters/', payload)
     roster.value = res.data
     showGenerateDialog.value = false // Close dialog on successful generation
+    toast.success('Roster generated successfully.')
   } catch (err) {
     error.value = err.response?.data?.error || 'Failed to generate roster.'
+    toast.error(error.value)
     // Keep dialog open on error so user can see the error and try again
   }
 }

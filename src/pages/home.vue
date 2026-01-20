@@ -15,7 +15,7 @@
       <v-container>
         <v-row>
           <v-col cols="12" md="6">
-            <v-card class="dashboard-card" @click="goTo('/people')" style="background-color: #283593;">
+            <v-card class="dashboard-card" @click="goTo('/people')" style="background-color: #01579B;">
               <v-card-title class="text-center">
                 <v-icon icon="mdi-account-group" class="mr-2"></v-icon>
                 People
@@ -26,7 +26,7 @@
             </v-card>
           </v-col>
           <v-col cols="12" md="6">
-            <v-card class="dashboard-card" @click="goTo('/roles')" style="background-color: #2196F3;">
+            <v-card class="dashboard-card" @click="goTo('/roles')" style="background-color: #00B8D4;">
               <v-card-title class="text-center">
                 <v-icon icon="mdi-account-cog" class="mr-2"></v-icon>
                 Roles
@@ -50,7 +50,7 @@
             </v-card>
           </v-col>
           <v-col cols="12" md="6">
-            <v-card class="dashboard-card" @click="goTo('/rosters')" style="background-color: #FF6F00;">
+            <v-card class="dashboard-card" @click="goTo('/rosters')" style="background-color: #FFA726;">
               <v-card-title class="text-center">
                 <v-icon icon="mdi-calendar" class="mr-2"></v-icon>
                 Rosters
@@ -175,6 +175,12 @@
                 v-model="form.is_producer"
                 color="blue-accent-2"
               ></v-checkbox>
+              <v-checkbox
+                label="Is Assistant Producer"
+                v-model="form.is_assistant_producer"
+                color="blue-accent-2"
+              ></v-checkbox>
+
             </v-col>
             <v-col cols="12" sm="6">
               <v-autocomplete
@@ -287,6 +293,7 @@
               rounded="lg"
               variant="outlined"
               required
+              :rules="[v => !!v || 'Event name is required']"
             ></v-text-field>
             <v-row>
               <v-col>
@@ -331,8 +338,6 @@
               rounded="lg"
               variant="outlined"
               type="text"
-              :rules="[v => !!v || 'Description is required']"
-              required
             ></v-text-field>
           </v-card-text>
           <v-divider></v-divider>
@@ -365,6 +370,9 @@
 import { useRouter } from 'vue-router';
 import { onMounted, ref } from 'vue';
 import axios from 'axios';
+import { toast } from 'vue-sonner';
+
+
 const router = useRouter();
 const memberDialog = ref(false);
 const roleDialog = ref(false);
@@ -382,6 +390,7 @@ const form = ref({
   phone_number: '',
   area_of_residence: '',
   is_producer: false,
+  is_assistant_producer: false,
   roles: []
 })
 const roleForm = ref({
@@ -391,15 +400,16 @@ const roleForm = ref({
 });
 function closeDialog() {
   memberDialog.value = false;
+  eventDialog.value = false;
   roleDialog.value = false;
 }
 async function addRole(){
   try {
     const response = await axios.post('http://localhost:8000/api/roles/', roleForm.value);
-    console.log('Role added successfully:', response.data);
+    toast.success('Role added successfully!');
     closeDialog();
   } catch (error) {
-    console.error('Error adding role:', error);
+    toast.error('Failed to add role.');
   }
 }
 
@@ -408,7 +418,7 @@ async function fetchRoles() {
     const response = await axios.get('http://localhost:8000/api/roles/');
     rolesList.value = response.data;
   } catch (error) {
-    console.error('Error fetching roles:', error);
+    toast.error('Failed to fetch roles.');
   }
 }
 
@@ -416,19 +426,19 @@ async function fetchRoles() {
 async function addUser(){
  try {
     const response = await axios.post('http://localhost:8000/api/people/', form.value);
-    console.log('User added successfully:', response.data);
+    toast.success('User added successfully!');
     closeDialog();
   } catch (error) {
-    console.error('Error adding user:', error);
+    toast.error('Failed to add user.');
   }
 }
 async function addEvent() {
   try{
-    const response = await axios.post('http://localhost:8000/api/events/'.form.value);
-    console.log('Event added successfully:', response.data);
+    const response = await axios.post('http://localhost:8000/api/events/', form.value);
+    toast.success('Event added successfully!');
     closeDialog();
   } catch (error) {
-    console.error('Error adding event:', error);
+    toast.error('Failed to add event.');
   }
 }
 

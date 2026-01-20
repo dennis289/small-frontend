@@ -69,8 +69,11 @@
 import { ref } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-sugar.css';
 
 const router = useRouter();
+const toast = useToast();
 const form = ref(null);
 const loading = ref(false);
 const showPassword = ref(false);
@@ -94,11 +97,13 @@ async function onSubmit() {
         email.value = '';
         loading.value = false;
         password.value = '';
-        console.log('Login successful:', response.data);
         router.push('/home');
+        toast.success('Login successful!'); 
+
     } catch (error) {
         loading.value = false;
         console.error('Login failed:', error);
+        toast.error('Login failed. Please check your credentials and try again.');
     } finally {
         loading.value = false;
     }
