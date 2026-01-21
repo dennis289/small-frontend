@@ -2,9 +2,8 @@
   <v-container>
     <v-card class="pa-4">
       <v-toolbar flat>
-        <v-toolbar-title>Generate Roster</v-toolbar-title>
+        <v-toolbar-title class="text-h5 text-center" color="grey darken-4">Generate Roster</v-toolbar-title>
         <v-spacer />
-        <v-btn prepend-icon="mdi-home" to="/home" variant="tonal" color="blue-accent-2">Home</v-btn>
       </v-toolbar>
 
       <v-row class="mt-4">
@@ -23,10 +22,10 @@
         <v-col>
           <v-row>
             <v-col class="d-flex justify-end align-center ma-2">
-              <v-btn size="small" class="mr-4" variant="outlined" @click="showGenerateDialog = true" :disabled="!selectedDate">Generate Roster</v-btn>
-              <v-btn size="small" variant="outlined" @click="saveRoster" v-if="roster">Save Roster</v-btn>
-              <v-btn size="small" variant="outlined" prepend-icon="mdi-file-pdf-box" @click="downloadRosterPDF" v-if="roster">Download PDF</v-btn>
-              <v-btn size="small" variant="outlined" icon="mdi-printer" @click="printRoster" v-if="roster" title="Print Roster"></v-btn>
+              <v-btn size="small" class="ma-2" variant="outlined" @click="showGenerateDialog = true" :disabled="!selectedDate">Generate Roster</v-btn>
+              <v-btn size="small" variant="outlined" class="ma-2" @click="saveRoster" v-if="roster">Save Roster</v-btn>
+              <v-btn size="small" variant="outlined" class="ma-2" prepend-icon="mdi-file-pdf-box" @click="downloadRosterPDF" v-if="roster">Download PDF</v-btn>
+              <v-btn size="small" variant="outlined" icon="mdi-printer" class="ma-2" @click="printRoster" v-if="roster" title="Print Roster"></v-btn>
             </v-col>
 
           </v-row>
@@ -57,16 +56,16 @@
         </h4>
 
         <!-- Services -->
-        <div v-for="service in roster.services" :key="service.service_id" class="mt-6">
-          <h4>{{ service.service_name }} 
-            <v-chip size="x-small" v-if="service.assignment_count">{{ service.assignment_count }} roles</v-chip>
+        <div v-for="event in roster.events" :key="event.event_id" class="mt-6">
+          <h4>{{ event.event_name }} 
+            <v-chip size="x-small" v-if="event.assignment_count">{{ event.assignment_count }} roles</v-chip>
           </h4>
           <v-table dense>
             <thead>
               <tr><th>Role</th><th>Person</th></tr>
             </thead>
             <tbody>
-              <tr v-for="assignment in service.assignments" :key="assignment.role">
+              <tr v-for="assignment in event.assignments" :key="assignment.role">
                 <td>{{ assignment.role }}</td>
                 <td>
                   <v-edit-dialog v-model="assignment.name">
@@ -186,9 +185,9 @@
             :no-data-text="loadingMembers ? 'Loading...' : 'No members found'"
             ></v-autocomplete>
 
-          <v-autocomplete
+            <v-autocomplete
             v-model="selectedEvent"
-            label="Select active events"
+            label="Select Events Absent"
             :items="events"
             item-title="name"
             item-value="id"
@@ -199,6 +198,7 @@
             clearable
             :no-data-text="loadingEvents ? 'Loading...' : 'No events found'"
             ></v-autocomplete>
+            
         </v-card-text>
         <v-card-actions>
           <v-btn size="small" variant="outlined" @click="showGenerateDialog = false">Cancel</v-btn>
@@ -244,10 +244,11 @@ async function generateRoster() {
     members: selectedMember.value,
     events: selectedEvent.value,
     is_present: false,
+    is_active: false,
   }
   
   try {
-    const res = await axios.post(BASE_URL + 'rosters/generate/', payload)
+    const res = await axios.post(BASE_URL + 'rosters/', payload)
     roster.value = res.data
     showGenerateDialog.value = false // Close dialog on successful generation
   } catch (err) {
@@ -345,7 +346,7 @@ async function fetchMember() {
 async function fetchEvents() {
   loadingEvents.value = true;
   try {
-    const res = await axios.get(BASE_URL + 'services/');
+    const res = await axios.get(BASE_URL + 'events/');
     events.value = res.data;
   } catch (error) {
     console.error('Error fetching Events:', error);

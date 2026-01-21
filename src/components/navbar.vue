@@ -66,9 +66,9 @@
           <template #activator="{props}">
             <v-list-item
             prepend-icon="mdi-calendar-star"
-            value="services"
+            value="events"
             v-bind="props"
-            @click="router.push('/services')"
+            @click="router.push('/events')"
           ></v-list-item>
           </template>
           </v-tooltip>

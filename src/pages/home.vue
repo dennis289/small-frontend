@@ -39,13 +39,13 @@
         </v-row>
         <v-row>
           <v-col cols="12" md="6">
-            <v-card class="dashboard-card" @click="goTo('/services') " style="background-color: #8BC34A;">
+            <v-card class="dashboard-card" @click="goTo('/events')" style="background-color: #8BC34A;">
               <v-card-title class="text-center">
                 <v-icon icon="mdi-clock" class="mr-2"></v-icon>
-                Services
+                Events
               </v-card-title>
               <v-card-text class="text-center">
-                Manage available services.
+                Manage available events.
               </v-card-text>
             </v-card>
           </v-col>
@@ -370,6 +370,9 @@ const memberDialog = ref(false);
 const roleDialog = ref(false);
 const rolesList = ref([]);
 const eventDialog = ref(false);
+const startTimeDialog = ref(false);
+const endTimeDialog = ref(false);
+
 
 
 const form = ref({
