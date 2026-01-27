@@ -4,6 +4,7 @@
       <navbar v-if="showNavbar"/>
     <v-main>
       <router-view />
+      <Toaster position="bottom-left" theme="system"/>
     </v-main>
     </v-layout>
   </v-app>
@@ -19,4 +20,6 @@ const showNavbar = computed(() => {
   return !publicPages.includes(router.currentRoute.value.path);
 })
 import navbar from './components/navbar.vue';
+import { Toaster } from 'vue-sonner';
+import 'vue-sonner/style.css';
 </script>

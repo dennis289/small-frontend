@@ -13,19 +13,37 @@
             <v-text-field color="grey darken-2" v-model="email" :readonly="loading" :rules="[required]" class="mb-4"
                 label="Email" density="compact" variant="outlined" clearable></v-text-field>
 
-            <v-text-field color="grey darken-2" v-model="password" :rules="[required, matchPassword]"
-                :type="showPassword ? 'text' : 'password'" class="mb-4" label="Password" density="compact"
-                variant="outlined" clearable :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-                @click:append="showPassword = !showPassword"></v-text-field>
+             <v-text-field
+            color="grey darken-2"
+            v-model="password"
+            :rules="[required, matchPassword]"
+            :type="showPassword ? 'text' : 'password'"
+            class="mb-4"
+            label="Password"
+            density="compact"
+            variant="outlined"
+            clearable
+            :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+            @click:append="showPassword = !showPassword"
+        ></v-text-field>
 
             <v-text-field color="grey darken-2" v-model="confirmPassword" :rules="[required, matchPassword]"
                 :type="showPassword ? 'text' : 'password'" class="mb-4" label="Confirm Password" density="compact"
                 variant="outlined" clearable></v-text-field>
 
-            <v-spacer></v-spacer>
-            <v-btn :disabled="!form" :loading="loading" color="success" size="large" type="submit" variant="elevated"
-                density="compact" block to="/login">Register</v-btn>
-            <br />
+        <v-spacer></v-spacer>
+            <v-btn
+            :disabled="!form"
+            :loading="loading"
+            color="success"
+            size="large"
+            type="submit"
+            variant="elevated"
+            density="compact"
+            block
+            to ="/login"
+            >Register</v-btn> 
+            <br/>
             <div>
                 <span>Already registered?</span>
                 <v-btn variant="text" to="/login" class="ml-2" color="primary">
@@ -39,8 +57,8 @@
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
-import router from '@/router';
-
+import { useRouter } from 'vue-router';
+const router = useRouter();
 const form = ref(null);
 const fullname = ref('');
 const password = ref('');
@@ -65,7 +83,7 @@ async function onSubmit() {
             password: password.value,
             confirmPassword: confirmPassword.value
         });
-        username.value = '';
+        
         fullname.value = '';
         email.value = '';
         password.value = '';

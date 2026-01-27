@@ -2,7 +2,7 @@
   <v-card>
     <v-card>
     <v-card-title class="text-h5 text-center mb-4" color="grey darken-4">
-      Role
+      Roles Management
     </v-card-title>
     <v-card-text>
       <div class="text-right">
@@ -20,8 +20,9 @@
             v-model="search"
             class="flex-grow-1 float-right"
             label="Search"
+            variant="outlined"
             width="350px"
-            prepend-icon="mdi-magnify"
+            append-inner-icon="mdi-magnify"
             clearable
             @input="loadItems({ page: 1, itemsPerPage: 10 })"
           ></v-text-field>
@@ -63,6 +64,9 @@
             <v-col cols="12" md="4" sm="6">
               <v-text-field 
                 label="Role Name*" 
+                :rules="[v => !!v || 'Role name is required']"
+                variant="outlined"
+                density="comfortable"
                 required 
                 v-model="form.name"
               ></v-text-field>
@@ -70,6 +74,8 @@
             <v-col cols="12" md="4" sm="6">
               <v-text-field 
                 label="Description" 
+                variant="outlined"
+                density="comfortable"
                 v-model="form.description"
               ></v-text-field>
             </v-col>
@@ -84,17 +90,20 @@
           <small class="text-caption text-medium-emphasis">* indicates required fields</small>
         </v-card-text>
         <v-divider></v-divider>
-        <v-card-actions>
+        <v-card-actions class="justify-space-between">
           <v-btn 
-            variant="plain" 
-            color="red-accent-2" 
+            variant="outlined"
+            density="comfortable" 
+            color="grey lighten-1" 
             text="Cancel" 
             class="ml-2" 
             @click="closeDialog"
           ></v-btn>
           <v-btn
-            variant="tonal"
-            color="green-accent-2"
+          class="mr-2"
+            variant="outlined"
+            density="comfortable"
+            color="grey brighten-1"
             @click="saveRole"
           >
             {{ editingId ? 'Update' : 'Add' }} Role
@@ -140,6 +149,7 @@
 import axios from 'axios';
 import { ref } from 'vue';
 import { onMounted } from 'vue';
+import { toast } from 'vue-sonner';
 
 // Reactive variables
 const dialog = ref(false);
@@ -170,8 +180,9 @@ async function fetchRoles() {
     const response = await axios.get('http://localhost:8000/api/roles/');
     console.log('Roles fetched:', response.data); // Debug log
     roles.value = response.data;
+    toast.success('Roles fetched successfully');
   } catch (error) {
-    console.error('Error fetching roles:', error);
+    toast.error('Failed to fetch roles');
   }
 }
 
@@ -211,35 +222,39 @@ async function saveRole() {
     if (editingId.value) {
       // Edit mode
       const dataWithId = { ...form.value, id: editingId.value };
-      await axios.put('http://localhost:8000/api/roles/', dataWithId);
+      await axios.put(`http://localhost:8000/api/roles/modify/${editingId.value}/`, dataWithId);
+      toast.success('Role updated successfully!');  
     } else {
       // Add mode
       await axios.post('http://localhost:8000/api/roles/', form.value);
+      toast.success('Role added successfully!');
     }
     await fetchRoles(); // Refresh the table
     closeDialog();
-    console.log('Role saved successfully');
+    toast.success('Role saved successfully');
   } catch (error) {
-    console.error('Error saving role:', error);
+    toast.error('Failed to save role.');
   }
 }
 
 function confirmDelete(item) {
   roleToDelete.value = item;
   deleteDialog.value = true;
+  toast.success('Confirming delete for role: ' + item?.name);
 }
 
 async function deleteRole() {
   try {
     await axios.delete('http://localhost:8000/api/roles/', {
       data: { id: roleToDelete.value.id }
+
     });
     roles.value = roles.value.filter(role => role.id !== roleToDelete.value.id);
-    console.log('Role deleted successfully');
+    toast.success('Role deleted successfully');
     deleteDialog.value = false;
     roleToDelete.value = null;
   } catch (error) {
-    console.error('Error deleting role:', error);
+    toast.error('Failed to delete role.');
   }
 }
 

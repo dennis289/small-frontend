@@ -15,6 +15,17 @@
           >
             Add Person
           </v-btn>
+
+          <v-btn
+            color="#FFD54F"
+            rounded="lg"
+            variant="tonal"
+            prepend-icon="mdi-account-group"
+            class="ml-2"
+            @click="bulkUploadDialog = true"
+          >
+            Bulk Upload
+        </v-btn>
           
         </div>
         
@@ -79,6 +90,7 @@
                 label="First Name*"
                 variant="outlined"
                 v-model="form.first_name"
+                :rules="[v => !!v || 'First name is required']"
                 required
               ></v-text-field>
             </v-col>
@@ -87,6 +99,7 @@
                 label="Last Name*"
                 variant="outlined"
                 v-model="form.last_name"
+                :rules="[v => !!v || 'Last name is required']"
                 required
               ></v-text-field>
             </v-col>
@@ -95,6 +108,7 @@
                 label="Email*"
                 variant="outlined"
                 v-model="form.email"
+                :rules="[v => !!v || 'Email is required']"
                 required
               ></v-text-field>
             </v-col>
@@ -103,16 +117,21 @@
                 label="Phone*"
                 variant="outlined"
                 v-model="form.phone_number"
+                :rules="[v => !!v || 'Phone number is required']"
                 required
               ></v-text-field>
             </v-col>
             <v-col cols="12" md="6">
               <v-text-field
-                label="Area of residence*"
+                label="Area of residence"
                 variant="outlined"
                 v-model="form.area_of_residence"
-                required
               ></v-text-field>
+              <v-checkbox
+                label="Is Active"
+                v-model="form.is_active"
+                color="#EF6C00"
+              ></v-checkbox>
             </v-col>
             <v-col cols="12" md="6">
               <v-checkbox
@@ -132,9 +151,11 @@
                 item-title="name"
                 item-value="id"
                 label="Roles"
+                variant="outlined"
                 v-model="form.roles"
                 closable-chips
                 multiple
+                :rules="[v => !!v.length || 'At least one role is required']"
                 clearable
               >
               <template v-slot:selection="{item, index}">
@@ -202,12 +223,58 @@
         </v-card-actions> 
       </v-card>
     </v-dialog>
+
+    <!-- a dialog for bulk upload for csv files could go here -->
+     <v-dialog v-model="bulkUploadDialog" max-width="800"> 
+      <v-card>
+        <v-card-title
+        class="text-h5 text-center"
+        style="padding: 16px;"
+        >
+        Bulk upload members in csv format
+      </v-card-title>
+      <v-card-text>
+        <v-file-input
+          label="Upload CSV File"
+          v-model="csvFile"
+          accept=".csv"
+          prepend-icon="mdi-file-upload"
+          variant="comfortable"
+          density="compact"
+          outline-color="#EF6C00"
+          outline-width="2"
+          outlined
+          dense
+        ></v-file-input>
+        <small class="text-caption text-medium-emphasis">
+          Please ensure the CSV file follows the required format.
+        </small>
+      </v-card-text>
+      <v-divider></v-divider>
+      <v-card-actions class="justify-space-between">
+        <v-btn
+          color="grey-accent-2"
+          variant="text"
+          @click="closeDialog()"
+          text="Cancel"
+        ></v-btn>
+        <v-btn
+          color="#FFD54F"
+          variant="text"
+          @click="submitBulkUpload"
+          text="Upload"
+        ></v-btn>
+      </v-card-actions> 
+      </v-card>
+     </v-dialog>
   </v-card>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import Papa from 'papaparse';
+import { toast } from 'vue-sonner';
 
 // Reactive variables
 const dialog = ref(false);
@@ -219,6 +286,8 @@ const serverItems = ref([]);
 const loading = ref(true);
 const totalItems = ref(0);
 const rolesList = ref([]);
+const bulkUploadDialog = ref(false);
+const csvFile = ref(null);
 
 // Form data
 const form = ref({
@@ -227,6 +296,7 @@ const form = ref({
   email: '',
   phone_number: '',
   area_of_residence: '',
+  is_active: true, 
   is_producer: false,
   is_assistant_producer: false,
   roles: [],
@@ -249,8 +319,9 @@ async function fetchRoles() {
   try {
     const response = await axios.get('http://localhost:8000/api/roles/');
     rolesList.value = response.data;
+    toast.success('Roles fetched successfully');
   } catch (error) {
-    console.error('Error fetching roles:', error);
+    toast.error('Failed to fetch roles');
   }
 }
 
@@ -262,11 +333,13 @@ async function loadItems({ page, itemsPerPage, sortBy }) {
         page,
         itemsPerPage
       }
-    });
+    }
+  );
     serverItems.value = response.data.results || response.data;
     totalItems.value = response.data.count || response.data.total || serverItems.value.length;
+    toast.success('Items loaded successfully');
   } catch (error) {
-    console.error('Error loading items:', error);
+    toast.error('Failed to load items');
   } finally {
     loading.value = false;
   }
@@ -280,6 +353,7 @@ function openDialog() {
     email: '',
     phone_number: '',
     area_of_residence: '',
+    is_active: true,
     is_producer: false,
     is_assistant_producer: false,
     roles: [],
@@ -290,6 +364,8 @@ function openDialog() {
 function closeDialog() {
   dialog.value = false;
   editingId.value = null;
+  bulkUploadDialog.value = false;
+  csvFile.value = null;
 }
 
 function editUser(item) {
@@ -299,12 +375,14 @@ function editUser(item) {
     email: item.email,
     phone_number: item.phone_number,
     area_of_residence: item.area_of_residence,
+    is_active: item.is_active !== false,
     is_producer: item.is_producer,
     is_assistant_producer: item.is_assistant_producer,
     roles: item.roles || []
   };
   editingId.value = item.id;
   dialog.value = true;
+  toast.success('Editing user: ' + item.first_name + ' ' + item.last_name);
 }
 
 async function saveUser() {
@@ -312,35 +390,70 @@ async function saveUser() {
     if (editingId.value) {
       // Edit mode
       const dataWithId = { ...form.value, id: editingId.value };
-      await axios.put('http://localhost:8000/api/persons/', dataWithId);
+      await axios.put('http://localhost:8000/api/persons/modify/' + editingId.value + '/', dataWithId);
+      toast .success('User updated successfully!');
     } else {
       // Add mode
       await axios.post('http://localhost:8000/api/persons/', form.value);
+      toast.success('User added successfully!');
     }
     closeDialog();
     await loadItems({ page: 1, itemsPerPage: 10 }); // Refresh table
-    console.log('User saved successfully');
+    toast.success('User saved successfully!');
   } catch (error) {
-    console.error('Error saving user:', error);
+    toast.error('Failed to save user.');
   }
+}
+async function submitBulkUpload() {
+  if (!csvFile.value) {
+    console.error('No CSV file selected');
+    toast.error('Please select a CSV file to upload.');
+    return;
+  }
+ 
+  Papa.parse(csvFile.value, {
+    header: true,
+    complete: async (results) => {
+      try {
+        const response = await axios.post('http://localhost:8000/api/persons/bulk-upload/', {
+          data: results.data
+        });
+        console.log('Bulk upload successful:', response.data);
+        toast.success('Bulk upload successful!');
+        closeDialog();
+        await loadItems({ page: 1, itemsPerPage: 10 }); // Refresh table
+      } catch (error) {
+        toast.error('Failed to upload CSV file.');
+        console.error('Error during bulk upload:', error);
+      }
+      closeDialog();
+    },
+    error: (error) => {
+      console.error('Error parsing CSV file:', error);
+      toast.error('Error parsing CSV file.');
+    }
+  });
+
 }
 
 function confirmDelete(item) {
   userToDelete.value = item;
   deleteDialog.value = true;
+  toast.success('Confirming delete for user: ' + item?.first_name + ' ' + item?.last_name);
 }
 
 async function deleteUser() {
   try {
-    await axios.delete('http://localhost:8000/api/persons/', {
+    await axios.delete('http://localhost:8000/api/persons/modify/' + userToDelete.value.id + '/', {
       data: { id: userToDelete.value.id }
+      
     });
     serverItems.value = serverItems.value.filter(person => person.id !== userToDelete.value.id);
-    console.log('User deleted successfully');
+    toast.success('User deleted successfully');
     deleteDialog.value = false;
     userToDelete.value = null;
   } catch (error) {
-    console.error('Error deleting user:', error);
+    toast.error('Failed to delete user.');
   }
 }
 

@@ -98,16 +98,18 @@
               rounded="lg"
               variant="outlined"
               type="text"
-              :rules="[v => !!v || 'Description is required']"
               required
             ></v-text-field>
-            <v-card-actions 
-              class="justify-space-between">
+            <v-card-actions class="d-flex justify-space-between">
               <v-spacer></v-spacer>
-              <v-btn color="secondary" 
+              <v-btn color="grey lighten-1" 
+              class="mr-2"
+              variant="outlined"
               @click="editorDialog = false"
               >Cancel</v-btn>
-              <v-btn color="primary" 
+              <v-btn color="grey brighten-1" 
+              variant="outlined"
+              class="ml-2" 
               type="submit"
               >Save</v-btn>
             </v-card-actions>
@@ -144,13 +146,14 @@
           <br/>
           This action cannot be undone.
         </v-card-text>
-        <v-card-actions>
+        <v-card-actions class="justify space-between">
           <v-spacer></v-spacer>
           <v-btn
             color="grey-accent-2"
             variant="text"
             @click="deleteDialog = false"
             text="Cancel"
+            density="comfortable"
           ></v-btn>
           <v-btn
             color="red-accent-2"
@@ -168,6 +171,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import { toast } from 'vue-sonner';
 
 const BASE_URL = 'http://localhost:8000/api/events';
 
@@ -198,9 +202,9 @@ async function loadData() {
   try {
     const res = await axios.get(BASE_URL + '/');
     events.value = res.data;
-    console.log('Api response:', res.data);
+    toast.success('Events loaded successfully!');
   } catch (error) {
-    console.error('Error loading events:', error);
+    toast.error('Failed to load events.');
   }
 }
  
@@ -225,7 +229,7 @@ function openEditor(event) {
     };
   }
   editorDialog.value = true;
-  console.log('Opening editor for event:', event);
+  toast.success('Opening editor for event: ' + event?.name);
 }
 
 async function saveEvent() {
@@ -236,7 +240,7 @@ async function saveEvent() {
     if (editedEvent.value) {
       const payload = { ...form.value, id: editedEvent.value.id };
       console.log('PUT payload:', payload);
-      await axios.put(BASE_URL + '/', payload);
+      await axios.put(BASE_URL + '/modify/' + editedEvent.value.id + '/', payload);
     } else {
       console.log('POST payload:', form.value);
       await axios.post(BASE_URL + '/', form.value);
@@ -244,24 +248,26 @@ async function saveEvent() {
     await loadData();
     editorDialog.value = false;
   } catch (error) {
-    console.error('Error saving event:', error);
-    console.error('Error response:', error.response?.data);
+    toast.error('Failed to save event.');
   }
 }
 
 function confirmDelete(event) {
   eventToDelete.value = event;
   deleteDialog.value = true;
+  toast.success('Confirming delete for event: ' + event?.name);
 }
 
 async function deleteEvent() {
   try {
-    await axios.delete(BASE_URL + '/', { data: { id: eventToDelete.value.id } });
+    await axios.delete(BASE_URL + '/modify/' + eventToDelete.value.id + '/', { data: { id: eventToDelete.value.id } });
     events.value = events.value.filter(s => s.id !== eventToDelete.value.id);
     deleteDialog.value = false;
     eventToDelete.value = null;
+    toast.success('Event deleted successfully.');
   } catch (error) {
     console.error('Error deleting event:', error);
+    toast.error('Failed to delete event.');
   }
 }
 </script>
