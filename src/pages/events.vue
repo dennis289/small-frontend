@@ -70,6 +70,7 @@
             <v-dialog v-model="startTimeDialog" activator="parent" width="auto">
             <v-time-picker 
             v-model="form.start_time"
+            :landscape="$vuetify.display.smAndUp"
             ></v-time-picker>
           </v-dialog>
           </v-text-field>
@@ -87,6 +88,7 @@
                >
               <v-dialog v-model="endTimeDialog" activator="parent" width="auto">
                 <v-time-picker v-model="form.end_time"
+                :landscape="$vuetify.display.smAndUp"
                 ></v-time-picker>
               </v-dialog>
             </v-text-field>

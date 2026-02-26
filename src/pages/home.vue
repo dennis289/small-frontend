@@ -26,7 +26,7 @@
             </v-card>
           </v-col>
           <v-col cols="12" md="6">
-            <v-card class="dashboard-card" @click="goTo('/roles')" style="background-color: #00B8D4;">
+            <v-card class="dashboard-card" @click="goTo('/roles')" style="background-color: #00BCD4;">
               <v-card-title class="text-center">
                 <v-icon icon="mdi-account-cog" class="mr-2"></v-icon>
                 Roles
