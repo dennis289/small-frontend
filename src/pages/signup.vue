@@ -23,13 +23,22 @@
             density="compact"
             variant="outlined"
             clearable
-            :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-            @click:append="showPassword = !showPassword"
+            :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+            @click:append-inner="showPassword = !showPassword"
         ></v-text-field>
 
-            <v-text-field color="grey darken-2" v-model="confirmPassword" :rules="[required, matchPassword]"
-                :type="showPassword ? 'text' : 'password'" class="mb-4" label="Confirm Password" density="compact"
-                variant="outlined" clearable></v-text-field>
+            <v-text-field color="grey darken-2" 
+            v-model="confirmPassword" 
+            :rules="[required, matchPassword]"
+            :type="showConfirmPassword ? 'text' : 'password'" 
+            class="mb-4" 
+            label="Confirm Password" 
+            density="compact"
+            variant="outlined" 
+            clearable
+            :append-inner-icon="showConfirmPassword ? 'mdi-eye' : 'mdi-eye-off'"
+            @click:append-inner="showConfirmPassword = !showConfirmPassword"
+        ></v-text-field>
 
         <v-spacer></v-spacer>
             <v-btn
@@ -41,7 +50,6 @@
             variant="elevated"
             density="compact"
             block
-            to ="/login"
             >Register</v-btn> 
             <br/>
             <div>
@@ -63,6 +71,7 @@ const form = ref(null);
 const fullname = ref('');
 const password = ref('');
 const showPassword = ref(false);
+const showConfirmPassword = ref(false);
 const loading = ref(false);
 const email = ref('');
 const confirmPassword = ref('');
