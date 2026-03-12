@@ -84,6 +84,18 @@
           ></v-list-item>
           </template>
           </v-tooltip>
+
+          <v-divider></v-divider>
+          <v-tooltip text="Feedback" >
+          <template #activator="{props}">
+            <v-list-item
+            prepend-icon="mdi-clipboard-check-outline"
+            value="feedback"
+            v-bind="props"
+            @click="router.push('/feedback')"
+          ></v-list-item>
+          </template>
+          </v-tooltip>
       
         </v-list>
 

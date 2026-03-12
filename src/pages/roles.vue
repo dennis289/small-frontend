@@ -80,11 +80,21 @@
               ></v-text-field>
             </v-col>
             <v-col cols="12" md="4" sm="6">
-              <v-checkbox 
-                label="Is Special Role" 
-                v-model="form.is_special_role" 
+              <v-checkbox
+                label="Is Special Role"
+                v-model="form.is_special_role"
                 color="#2196F3"
               ></v-checkbox>
+            </v-col>
+            <v-col cols="12" md="4" sm="6" v-if="form.is_special_role">
+              <v-text-field
+                label="Max Assignments"
+                type="number"
+                min="1"
+                variant="outlined"
+                density="comfortable"
+                v-model.number="form.max_assignments"
+              ></v-text-field>
             </v-col>
           </v-row>
           <small class="text-caption text-medium-emphasis">* indicates required fields</small>
@@ -163,7 +173,8 @@ const roles = ref([]);
 const form = ref({
   name: '',
   description: '',
-  is_special_role: false
+  is_special_role: false,
+  max_assignments: '1'
 });
 
 // Table headers
@@ -171,6 +182,7 @@ const headers = [
   { title: 'Role Name', value: 'name' },
   { title: 'Description', value: 'description' },
   { title: 'Is Special Role', value: 'is_special_role', sortable: false },
+  { title: 'Max Assignments', value: 'max_assignments' },
   { title: 'Actions', value: 'actions', sortable: false }
 ];
 
@@ -191,7 +203,8 @@ function openDialog() {
   form.value = {
     name: '',
     description: '',
-    is_special_role: false
+    is_special_role: false,
+    max_assignments: '1'
   };
   dialog.value = true;
 }
@@ -203,7 +216,8 @@ function closeDialog() {
   form.value = {
     name: '',
     description: '',
-    is_special_role: false
+    is_special_role: false,
+    max_assignments: 1
   };
 }
 
@@ -211,7 +225,8 @@ function editRole(item) {
   form.value = {
     name: item.name,
     description: item.description,
-    is_special_role: item.is_special_role
+    is_special_role: item.is_special_role,
+    max_assignments: item.max_assignments || 1
   };
   editingId.value = item.id;
   dialog.value = true;
@@ -240,15 +255,11 @@ async function saveRole() {
 function confirmDelete(item) {
   roleToDelete.value = item;
   deleteDialog.value = true;
-  toast.success('Confirming delete for role: ' + item?.name);
 }
 
 async function deleteRole() {
   try {
-    await axios.delete('http://localhost:8000/api/roles/', {
-      data: { id: roleToDelete.value.id }
-
-    });
+    await axios.delete(`http://localhost:8000/api/roles/modify/${roleToDelete.value.id}/`);
     roles.value = roles.value.filter(role => role.id !== roleToDelete.value.id);
     toast.success('Role deleted successfully');
     deleteDialog.value = false;

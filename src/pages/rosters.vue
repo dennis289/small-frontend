@@ -77,59 +77,22 @@
           </v-table>
         </div>
 
-        <!-- Special Roles -->
-        <div v-if="roster.special_roles || roster.hospitality" class="mt-6">
-          <h4>Hospitality</h4>
-          <v-chip-group>
-            <!-- New structure -->
-            <v-chip
-              v-for="person in roster.special_roles?.hospitality || []"
-              :key="person.person_id"
-              class="me-2"
-            >
-              <v-edit-dialog v-model="person.name">
-                {{ person.name }}
-              </v-edit-dialog>
-            </v-chip>
-            <!-- Fallback for old structure -->
-            <v-chip
-              v-for="(name, index) in roster.hospitality || []"
-              :key="index"
-              class="me-2"
-              v-if="!roster.special_roles"
-            >
-              <v-edit-dialog v-model="roster.hospitality[index]">
-                {{ name }}
-              </v-edit-dialog>
-            </v-chip>
-          </v-chip-group>
-        </div>
-
-        <div v-if="roster.special_roles || roster.social_media" class="mt-4">
-          <h4>Social Media</h4>
-          <v-chip-group>
-            <!-- New structure -->
-            <v-chip
-              v-for="person in roster.special_roles?.social_media || []"
-              :key="person.person_id"
-              class="me-2"
-            >
-              <v-edit-dialog v-model="person.name">
-                {{ person.name }}
-              </v-edit-dialog>
-            </v-chip>
-            <!-- Fallback for old structure -->
-            <v-chip
-              v-for="(name, index) in roster.social_media || []"
-              :key="index"
-              class="me-2"
-              v-if="!roster.special_roles"
-            >
-              <v-edit-dialog v-model="roster.social_media[index]">
-                {{ name }}
-              </v-edit-dialog>
-            </v-chip>
-          </v-chip-group>
+        <!-- Special Roles (dynamic) -->
+        <div v-if="roster.special_roles" class="mt-6">
+          <div v-for="(people, roleName) in roster.special_roles" :key="roleName" class="mt-4">
+            <h4>{{ formatRoleName(roleName) }}</h4>
+            <v-chip-group>
+              <v-chip
+                v-for="person in people"
+                :key="person.person_id"
+                class="me-2"
+              >
+                <v-edit-dialog v-model="person.name">
+                  {{ person.name }}
+                </v-edit-dialog>
+              </v-chip>
+            </v-chip-group>
+          </div>
         </div>
 
         <!-- Summary (optional, can be hidden) -->
@@ -237,6 +200,10 @@ function formatDate(date) {
   return date
 }
 
+function formatRoleName(name) {
+  return name.replace(/\b\w/g, c => c.toUpperCase())
+}
+
 async function generateRoster() {
   error.value = null
   roster.value = null
@@ -273,7 +240,7 @@ function printRoster() {
 
 async function downloadRosterPDF() {
   if (!roster.value) {
-    alert('No roster to download. Please generate a roster first.');
+    toast.error('No roster to download. Please generate a roster first.');
     return;
   }
 
@@ -289,24 +256,25 @@ async function downloadRosterPDF() {
     const url = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement('a');
     link.href = url;
-    
+
     // Create filename with date
     const dateStr = formatDate(selectedDate.value) || new Date().toISOString().split('T')[0];
     link.setAttribute('download', `roster_${dateStr}.pdf`);
-    
+
     // Append to html link element page
     document.body.appendChild(link);
-    
+
     // Start download
     link.click();
-    
+
     // Clean up and remove the link
     link.parentNode.removeChild(link);
     window.URL.revokeObjectURL(url);
-    
-  } catch (error) {
-    console.error('Error downloading PDF:', error);
-    alert('Failed to download PDF. Please try again.');
+
+    toast.success('PDF downloaded successfully.');
+  } catch (err) {
+    console.error('Error downloading PDF:', err);
+    toast.error('Failed to download PDF. Please try again.');
   }
 }
 
@@ -316,9 +284,9 @@ async function saveRoster() {
       date: formatDate(selectedDate.value),
       data: roster.value,
     })
-    alert('Roster saved successfully.')
+    toast.success('Roster saved successfully.')
   } catch (err) {
-    alert('Failed to save roster.')
+    toast.error('Failed to save roster.')
   }
 }
 async function fetchMember() {

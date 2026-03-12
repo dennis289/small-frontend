@@ -50,6 +50,11 @@ const routes = [
     path: '/rosters',
     name: 'Rosters',
     component: () => import('@/pages/rosters.vue')
+  },
+  {
+    path: '/feedback',
+    name: 'Feedback',
+    component: () => import('@/pages/feedback.vue')
   }
 ]
 
