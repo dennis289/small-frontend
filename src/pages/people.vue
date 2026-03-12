@@ -194,17 +194,25 @@
     </v-dialog>
 
     <!-- Delete Confirmation Dialog -->
-    <v-dialog v-model="deleteDialog" max-width="400">
+    <v-dialog v-model="deleteDialog" max-width="600">
       <v-card>
         <v-card-title class="text-h6">
           Confirm Delete
         </v-card-title>
         <v-card-text>
-          Are you sure you want to delete this person
-          <v-spacer></v-spacer>
+          Are you sure you want to delete
           <strong>{{ userToDelete?.first_name }} {{ userToDelete?.last_name }}</strong>?
           <br/>
-          This action cannot be undone.
+          This action cannot be undone. Please type 
+          <v-chip color="red" variant="tonal">DELETE</v-chip> to confirm.
+          <v-text-field
+            v-model="deleteConfirmation"
+            label="Type DELETE to confirm"
+            variant="outlined"
+            :rules="[v => v === 'DELETE' || 'You must type DELETE to confirm']"
+            required
+          > 
+          </v-text-field> 
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -275,6 +283,7 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import Papa from 'papaparse';
 import { toast } from 'vue-sonner';
+import { de } from 'vuetify/locale';
 
 // Reactive variables
 const dialog = ref(false);
@@ -288,6 +297,7 @@ const totalItems = ref(0);
 const rolesList = ref([]);
 const bulkUploadDialog = ref(false);
 const csvFile = ref(null);
+const deleteConfirmation = ref('');
 
 // Form data
 const form = ref({
@@ -337,7 +347,6 @@ async function loadItems({ page, itemsPerPage, sortBy }) {
   );
     serverItems.value = response.data.results || response.data;
     totalItems.value = response.data.count || response.data.total || serverItems.value.length;
-    toast.success('Items loaded successfully');
   } catch (error) {
     toast.error('Failed to load items');
   } finally {
@@ -382,7 +391,6 @@ function editUser(item) {
   };
   editingId.value = item.id;
   dialog.value = true;
-  toast.success('Editing user: ' + item.first_name + ' ' + item.last_name);
 }
 
 async function saveUser() {
@@ -390,18 +398,17 @@ async function saveUser() {
     if (editingId.value) {
       // Edit mode
       const dataWithId = { ...form.value, id: editingId.value };
-      await axios.put('http://localhost:8000/api/persons/modify/' + editingId.value + '/', dataWithId);
-      toast .success('User updated successfully!');
+      const response = await axios.put('http://localhost:8000/api/persons/modify/' + editingId.value + '/', dataWithId);
+      toast.success(response.data.message || 'User updated successfully!');
     } else {
       // Add mode
-      await axios.post('http://localhost:8000/api/persons/', form.value);
-      toast.success('User added successfully!');
+      const response = await axios.post('http://localhost:8000/api/persons/', form.value);
+      toast.success(response.data.message || 'User added successfully!');
     }
     closeDialog();
     await loadItems({ page: 1, itemsPerPage: 10 }); // Refresh table
-    toast.success('User saved successfully!');
   } catch (error) {
-    toast.error('Failed to save user.');
+    toast.error(error.response?.data?.error || 'Failed to save user.');
   }
 }
 async function submitBulkUpload() {
@@ -419,18 +426,18 @@ async function submitBulkUpload() {
           data: results.data
         });
         console.log('Bulk upload successful:', response.data);
-        toast.success('Bulk upload successful!');
+        toast.success(response.data.message || 'Bulk upload successful!');
         closeDialog();
         await loadItems({ page: 1, itemsPerPage: 10 }); // Refresh table
       } catch (error) {
-        toast.error('Failed to upload CSV file.');
+        toast.error(error.response?.data?.error || 'Failed to upload CSV file.');
         console.error('Error during bulk upload:', error);
       }
       closeDialog();
     },
     error: (error) => {
       console.error('Error parsing CSV file:', error);
-      toast.error('Error parsing CSV file.');
+      toast.error(error.response?.data?.error || 'Failed to parse CSV file.');
     }
   });
 
@@ -438,24 +445,33 @@ async function submitBulkUpload() {
 
 function confirmDelete(item) {
   userToDelete.value = item;
+  deleteConfirmation.value = '';
   deleteDialog.value = true;
-  toast.success('Confirming delete for user: ' + item?.first_name + ' ' + item?.last_name);
+}
+if (deleteDialog.value) {
+  deleteConfirmation.value = '';
+  toast.warning('Please confirm deletion by typing DELETE');  
 }
 
+
+
 async function deleteUser() {
+  if (deleteConfirmation.value !== 'DELETE') {
+    toast.error('You must type DELETE to confirm.');
+    return;
+  }
+
   try {
-    await axios.delete('http://localhost:8000/api/persons/modify/' + userToDelete.value.id + '/', {
-      data: { id: userToDelete.value.id }
-      
-    });
+    await axios.delete('http://localhost:8000/api/persons/modify/' + userToDelete.value.id + '/');
     serverItems.value = serverItems.value.filter(person => person.id !== userToDelete.value.id);
-    toast.success('User deleted successfully');
+    toast.success('User deleted successfully!');
     deleteDialog.value = false;
     userToDelete.value = null;
   } catch (error) {
     toast.error('Failed to delete user.');
   }
 }
+
 
 // Initialize
 onMounted(fetchRoles);
