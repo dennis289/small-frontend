@@ -1,81 +1,82 @@
 <template>
-  <v-card>
-   <v-card>
-    <v-card-title class="text-h5 text-center mb-4 " color="grey darken-4">
-      Members Management
-    </v-card-title>
-    <v-card-text>
-      <div class="text-right">
-          <v-btn
-            color="#FFD54F"
-            rounded="lg"
-            variant="tonal"
-            prepend-icon="mdi-account-plus"
-            @click="openDialog"
-          >
-            Add Person
-          </v-btn>
-
-          <v-btn
-            color="#FFD54F"
-            rounded="lg"
-            variant="tonal"
-            prepend-icon="mdi-account-group"
-            class="ml-2"
-            @click="bulkUploadDialog = true"
-          >
-            Bulk Upload
-        </v-btn>
-          
-        </div>
-        
-          <v-text-field
-            v-model="search"
-            rounded="lg"
-            class="flex-grow-1 float-right mt-4 mb-4"
-            label="Search"
-            variant="outlined"
-            width="350px"
-            append-inner-icon="mdi-magnify"
-            clearable
-            @input="loadItems({ page: 1, itemsPerPage: 10 })"
-          ></v-text-field>
-        
-    
-    </v-card-text>
-   </v-card>
-
-    <v-data-table
-      :headers="headers"
-      :items="serverItems"
-      :items-length="totalItems"
-      :loading="loading"
-      class="elevation-1"
-      :search="search"
-      @update:options="loadItems"
+  <v-container class="pa-6 pa-md-8" fluid>
+    <PageHeader
+      eyebrow="Directory"
+      italic="members"
+      subtitle="Manage the people on your roster — roles, contact details, and access."
+      title="Team"
     >
-      <template #item.is_producer="{ item }">
-        <v-chip
-          :color="item.is_producer ? '#757575' : '#795548'"
-          size="small"
-          variant="flat"
-        >
-          {{ item.is_producer ? 'Yes' : 'No' }}
-        </v-chip>
+      <template #actions>
+        <v-btn color="primary" prepend-icon="mdi-account-plus" variant="flat" @click="openDialog">Add person</v-btn>
+        <v-btn prepend-icon="mdi-upload" variant="outlined" @click="bulkUploadDialog = true">Bulk upload</v-btn>
       </template>
+    </PageHeader>
 
-      <template #item.role_names="{ item }">
-        <span v-if="item.role_names && item.role_names.length">
-          {{ item.role_names.join(', ') }}
-        </span>
-        <span v-else>-</span>
-      </template>
+    <div class="toolbar-row mb-4 d-flex align-center flex-wrap" style="gap: 12px;">
+      <v-text-field
+        v-model="search"
+        class="toolbar-search"
+        clearable
+        density="comfortable"
+        hide-details
+        placeholder="Search by name, email or phone"
+        prepend-inner-icon="mdi-magnify"
+        variant="outlined"
+        @input="onSearch"
+      />
+      <v-spacer />
+      <span class="text-caption text-medium-emphasis">{{ totalItems }} {{ totalItems === 1 ? 'member' : 'members' }}</span>
+    </div>
 
-      <template #item.actions="{ item }">
-        <v-btn icon="mdi-pencil" size="small" @click="editUser(item)"></v-btn>
-        <v-btn icon="mdi-delete" size="small" @click="confirmDelete(item)"></v-btn>
-      </template>
-    </v-data-table>
+    <v-card class="overflow-hidden" rounded="lg" variant="outlined">
+      <v-data-table-server
+        v-model:items-per-page="itemsPerPage"
+        v-model:page="page"
+        :headers="headers"
+        :items="serverItems"
+        :items-length="totalItems"
+        :loading="loading"
+        @update:options="loadItems"
+      >
+        <template #item.is_active="{ item }">
+          <v-chip
+            :color="item.is_active ? 'success' : 'default'"
+            size="small"
+            variant="tonal"
+          >
+            {{ item.is_active ? 'Yes' : 'No' }}
+          </v-chip>
+        </template>
+
+        <template #item.is_producer="{ item }">
+          <v-chip
+            :color="item.is_producer ? 'primary' : 'default'"
+            size="small"
+            variant="tonal"
+          >
+            {{ item.is_producer ? 'Yes' : 'No' }}
+          </v-chip>
+        </template>
+
+        <template #item.role_names="{ item }">
+          <span v-if="item.role_names && item.role_names.length > 0">
+            {{ item.role_names.join(', ') }}
+          </span>
+          <span v-else class="text-medium-emphasis">—</span>
+        </template>
+
+        <template #item.actions="{ item }">
+          <v-btn icon="mdi-pencil" size="small" variant="text" @click="editUser(item)" />
+          <v-btn
+            color="error"
+            icon="mdi-delete"
+            size="small"
+            variant="text"
+            @click="confirmDelete(item)"
+          />
+        </template>
+      </v-data-table-server>
+    </v-card>
 
     <!-- Add/Edit Dialog -->
     <v-dialog v-model="dialog" max-width="600">
@@ -85,108 +86,86 @@
       >
         <v-card-text>
           <v-row dense>
-            <v-col cols="12" md="6" >
+            <v-col cols="12" md="6">
               <v-text-field
-                label="First Name*"
-                variant="outlined"
                 v-model="form.first_name"
+                label="First Name*"
+                required
                 :rules="[v => !!v || 'First name is required']"
-                required
-              ></v-text-field>
+              />
             </v-col>
             <v-col cols="12" md="6">
               <v-text-field
-                label="Last Name*"
-                variant="outlined"
                 v-model="form.last_name"
+                label="Last Name*"
+                required
                 :rules="[v => !!v || 'Last name is required']"
-                required
-              ></v-text-field>
+              />
             </v-col>
             <v-col cols="12" md="6">
               <v-text-field
-                label="Email*"
-                variant="outlined"
                 v-model="form.email"
+                label="Email*"
+                required
                 :rules="[v => !!v || 'Email is required']"
-                required
-              ></v-text-field>
+              />
             </v-col>
             <v-col cols="12" md="6">
               <v-text-field
-                label="Phone*"
-                variant="outlined"
                 v-model="form.phone_number"
-                :rules="[v => !!v || 'Phone number is required']"
+                label="Phone*"
                 required
-              ></v-text-field>
+                :rules="[v => !!v || 'Phone number is required']"
+              />
             </v-col>
             <v-col cols="12" md="6">
               <v-text-field
-                label="Area of residence"
-                variant="outlined"
                 v-model="form.area_of_residence"
-              ></v-text-field>
+                label="Area of residence"
+              />
               <v-checkbox
-                label="Is Active"
                 v-model="form.is_active"
-                color="#EF6C00"
-              ></v-checkbox>
+                color="primary"
+                label="Is Active"
+              />
             </v-col>
             <v-col cols="12" md="6">
               <v-checkbox
-                label="Is Producer"
                 v-model="form.is_producer"
-                color="#EF6C00"
-              ></v-checkbox>
+                color="primary"
+                label="Is Producer"
+              />
               <v-checkbox
-                label="Is Assistant Producer"
                 v-model="form.is_assistant_producer"
-                color="#EF6C00"
-              ></v-checkbox>
+                color="primary"
+                label="Is Assistant Producer"
+              />
             </v-col>
-            <v-col cols="12" >
+            <v-col cols="12">
               <v-autocomplete
-                :items="rolesList"
+                v-model="form.roles"
+                clearable
+                closable-chips
                 item-title="name"
                 item-value="id"
+                :items="rolesList"
                 label="Roles"
-                variant="outlined"
-                v-model="form.roles"
-                closable-chips
                 multiple
-                :rules="[v => !!v.length || 'At least one role is required']"
-                clearable
+                :rules="[v => v.length > 0 || 'At least one role is required']"
               >
-              <template v-slot:selection="{item, index}">
-                <v-chip v-if="index < 3" :text="item.title" :key="index" small>
-                
-                </v-chip>
-                <span v-else-if="index === 3" class="grey--text text--darken-1"
-                  >+{{ form.roles.length - 3 }} more</span>
-              </template>
-            </v-autocomplete>
+                <template #selection="{item, index}">
+                  <v-chip v-if="index < 3" :key="index" small :text="item.title" />
+                  <span v-else-if="index === 3" class="grey--text text--darken-1">+{{ form.roles.length - 3 }} more</span>
+                </template>
+              </v-autocomplete>
             </v-col>
           </v-row>
           <small class="text-caption text-medium-emphasis">* indicates required fields</small>
         </v-card-text>
-        <v-divider></v-divider>
-        <v-card-actions class="justify-space-between">
-          <v-btn
-            variant="tonal"
-            density="comfortable"
-            color="grey-accent-2"
-            text="Cancel"
-            class="ml-2"
-            @click="closeDialog"
-          ></v-btn>       
-          <v-btn
-            variant="tonal"
-            color="grey-brighten-1"
-            density="comfortable"
-            class="mr-2"
-            @click="saveUser"
-          >
+        <v-divider />
+        <v-card-actions class="justify-space-between px-4 py-3">
+          <v-btn variant="text" @click="closeDialog">Cancel</v-btn>
+          <v-btn color="primary" variant="flat" @click="saveUser">
             {{ editingId ? 'Update' : 'Add' }} User
           </v-btn>
         </v-card-actions>
@@ -196,167 +175,83 @@
     <!-- Delete Confirmation Dialog -->
     <v-dialog v-model="deleteDialog" max-width="600">
       <v-card>
-        <v-card-title class="text-h6">
-          Confirm Delete
-        </v-card-title>
+        <v-card-title class="text-h6">Confirm Delete</v-card-title>
         <v-card-text>
           Are you sure you want to delete
           <strong>{{ userToDelete?.first_name }} {{ userToDelete?.last_name }}</strong>?
-          <br/>
-          This action cannot be undone. Please type 
-          <v-chip color="red" variant="tonal">DELETE</v-chip> to confirm.
+          <br>
+          This action cannot be undone. Please type
+          <v-chip color="error" variant="tonal">DELETE</v-chip> to confirm.
           <v-text-field
             v-model="deleteConfirmation"
+            class="mt-3"
             label="Type DELETE to confirm"
-            variant="outlined"
-            :rules="[v => v === 'DELETE' || 'You must type DELETE to confirm']"
             required
-          > 
-          </v-text-field> 
+            :rules="[v => v === 'DELETE' || 'You must type DELETE to confirm']"
+          />
         </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            color="grey-accent-2"
-            variant="text"
-            @click="deleteDialog = false"
-            text="Cancel"
-          ></v-btn>
-          <v-btn
-            color="red-accent-2"
-            variant="text"
-            @click="deleteUser"
-            text="Delete"
-          ></v-btn>
-        </v-card-actions> 
+        <v-card-actions class="justify-end px-4 py-3">
+          <v-btn variant="text" @click="deleteDialog = false">Cancel</v-btn>
+          <v-btn color="error" variant="flat" @click="deleteUser">Delete</v-btn>
+        </v-card-actions>
       </v-card>
     </v-dialog>
 
-    <!-- a dialog for bulk upload for csv files could go here -->
-     <v-dialog v-model="bulkUploadDialog" max-width="800"> 
+    <!-- Bulk Upload Dialog -->
+    <v-dialog v-model="bulkUploadDialog" max-width="800">
       <v-card>
-        <v-card-title
-        class="text-h5 text-center"
-        style="padding: 16px;"
-        >
-        Bulk upload members in csv format
-      </v-card-title>
-      <v-card-text>
-        <v-file-input
-          label="Upload CSV File"
-          v-model="csvFile"
-          accept=".csv"
-          prepend-icon="mdi-file-upload"
-          variant="comfortable"
-          density="compact"
-          outline-color="#EF6C00"
-          outline-width="2"
-          outlined
-          dense
-        ></v-file-input>
-        <small class="text-caption text-medium-emphasis">
-          Please ensure the CSV file follows the required format.
-        </small>
-      </v-card-text>
-      <v-divider></v-divider>
-      <v-card-actions class="justify-space-between">
-        <v-btn
-          color="grey-accent-2"
-          variant="text"
-          @click="closeDialog()"
-          text="Cancel"
-        ></v-btn>
-        <v-btn
-          color="#FFD54F"
-          variant="text"
-          @click="submitBulkUpload"
-          text="Upload"
-        ></v-btn>
-      </v-card-actions> 
+        <v-card-title class="text-h6">Bulk Upload Members</v-card-title>
+        <v-card-text>
+          <v-file-input
+            v-model="csvFile"
+            accept=".csv"
+            density="comfortable"
+            label="Upload CSV File"
+            prepend-icon="mdi-file-upload"
+          />
+          <small class="text-caption text-medium-emphasis">
+            Please ensure the CSV file follows the required format.
+          </small>
+        </v-card-text>
+        <v-divider />
+        <v-card-actions class="justify-space-between px-4 py-3">
+          <v-btn variant="text" @click="closeDialog()">Cancel</v-btn>
+          <v-btn color="primary" variant="flat" @click="submitBulkUpload">Upload</v-btn>
+        </v-card-actions>
       </v-card>
-     </v-dialog>
-  </v-card>
+    </v-dialog>
+  </v-container>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
-import Papa from 'papaparse';
-import { toast } from 'vue-sonner';
-import { de } from 'vuetify/locale';
+  import Papa from 'papaparse'
+  import { onMounted, ref } from 'vue'
+  import { toast } from 'vue-sonner'
+  import { usePeopleStore } from '@/stores/people'
+  import { useRolesStore } from '@/stores/roles'
 
-// Reactive variables
-const dialog = ref(false);
-const deleteDialog = ref(false);
-const search = ref('');
-const editingId = ref(null);
-const userToDelete = ref(null);
-const serverItems = ref([]);
-const loading = ref(true);
-const totalItems = ref(0);
-const rolesList = ref([]);
-const bulkUploadDialog = ref(false);
-const csvFile = ref(null);
-const deleteConfirmation = ref('');
+  const peopleStore = usePeopleStore()
+  const rolesStore = useRolesStore()
 
-// Form data
-const form = ref({
-  first_name: '',
-  last_name: '',
-  email: '',
-  phone_number: '',
-  area_of_residence: '',
-  is_active: true, 
-  is_producer: false,
-  is_assistant_producer: false,
-  roles: [],
-});
+  // Reactive variables
+  const dialog = ref(false)
+  const deleteDialog = ref(false)
+  const search = ref('')
+  const editingId = ref(null)
+  const userToDelete = ref(null)
+  const serverItems = ref([])
+  const loading = ref(false)
+  const totalItems = ref(0)
+  const page = ref(1)
+  const itemsPerPage = ref(10)
+  const rolesList = ref([])
+  const bulkUploadDialog = ref(false)
+  const csvFile = ref(null)
+  const deleteConfirmation = ref('')
+  let searchTimer = null
 
-// Table headers
-const headers = [
-  { title: 'First Name', value: 'first_name' },
-  { title: 'Last Name', value: 'last_name' },
-  { title: 'Email', value: 'email' },
-  { title: 'Phone', value: 'phone_number' },
-  { title: 'Area of Residence', value: 'area_of_residence' },
-  { title: 'Is Producer', value: 'is_producer', sortable: false }, 
-  { title: 'Roles', value: 'role_names' },
-  { title: 'Actions', value: 'actions', sortable: false }
-];
-
-// Functions
-async function fetchRoles() {
-  try {
-    const response = await axios.get('http://localhost:8000/api/roles/');
-    rolesList.value = response.data;
-    toast.success('Roles fetched successfully');
-  } catch (error) {
-    toast.error('Failed to fetch roles');
-  }
-}
-
-async function loadItems({ page, itemsPerPage, sortBy }) {
-  try {
-    loading.value = true;
-    const response = await axios.get('http://localhost:8000/api/persons/', {
-      params: {
-        page,
-        itemsPerPage
-      }
-    }
-  );
-    serverItems.value = response.data.results || response.data;
-    totalItems.value = response.data.count || response.data.total || serverItems.value.length;
-  } catch (error) {
-    toast.error('Failed to load items');
-  } finally {
-    loading.value = false;
-  }
-}
-
-function openDialog() {
-  editingId.value = null;
-  form.value = {
+  // Form data
+  const form = ref({
     first_name: '',
     last_name: '',
     email: '',
@@ -366,113 +261,197 @@ function openDialog() {
     is_producer: false,
     is_assistant_producer: false,
     roles: [],
-  };
-  dialog.value = true;
-}
+  })
 
-function closeDialog() {
-  dialog.value = false;
-  editingId.value = null;
-  bulkUploadDialog.value = false;
-  csvFile.value = null;
-}
+  // Table headers
+  const headers = [
+    { title: 'First Name', value: 'first_name' },
+    { title: 'Last Name', value: 'last_name' },
+    { title: 'Email', value: 'email' },
+    { title: 'Phone', value: 'phone_number' },
+    { title: 'Active', value: 'is_active', sortable: false },
+    { title: 'Is Producer', value: 'is_producer', sortable: false },
+    { title: 'Roles', value: 'role_names' },
+    { title: 'Actions', value: 'actions', sortable: false },
+  ]
 
-function editUser(item) {
-  form.value = {
-    first_name: item.first_name,
-    last_name: item.last_name,
-    email: item.email,
-    phone_number: item.phone_number,
-    area_of_residence: item.area_of_residence,
-    is_active: item.is_active !== false,
-    is_producer: item.is_producer,
-    is_assistant_producer: item.is_assistant_producer,
-    roles: item.roles || []
-  };
-  editingId.value = item.id;
-  dialog.value = true;
-}
-
-async function saveUser() {
-  try {
-    if (editingId.value) {
-      // Edit mode
-      const dataWithId = { ...form.value, id: editingId.value };
-      const response = await axios.put('http://localhost:8000/api/persons/modify/' + editingId.value + '/', dataWithId);
-      toast.success(response.data.message || 'User updated successfully!');
+  // Functions
+  async function fetchRoles () {
+    const result = await rolesStore.fetchRoles()
+    if (result.success) {
+      rolesList.value = rolesStore.roles
     } else {
-      // Add mode
-      const response = await axios.post('http://localhost:8000/api/persons/', form.value);
-      toast.success(response.data.message || 'User added successfully!');
+      toast.error(result.error || 'Failed to fetch roles')
     }
-    closeDialog();
-    await loadItems({ page: 1, itemsPerPage: 10 }); // Refresh table
-  } catch (error) {
-    toast.error(error.response?.data?.error || 'Failed to save user.');
   }
-}
-async function submitBulkUpload() {
-  if (!csvFile.value) {
-    console.error('No CSV file selected');
-    toast.error('Please select a CSV file to upload.');
-    return;
+
+  function loadItems ({ page: p, itemsPerPage: ipp }) {
+    page.value = p
+    itemsPerPage.value = ipp
+    fetchData()
   }
- 
-  Papa.parse(csvFile.value, {
-    header: true,
-    complete: async (results) => {
-      try {
-        const response = await axios.post('http://localhost:8000/api/persons/bulk-upload/', {
-          data: results.data
-        });
-        console.log('Bulk upload successful:', response.data);
-        toast.success(response.data.message || 'Bulk upload successful!');
-        closeDialog();
-        await loadItems({ page: 1, itemsPerPage: 10 }); // Refresh table
-      } catch (error) {
-        toast.error(error.response?.data?.error || 'Failed to upload CSV file.');
-        console.error('Error during bulk upload:', error);
+
+  function onSearch () {
+    clearTimeout(searchTimer)
+    searchTimer = setTimeout(() => {
+      page.value = 1
+      fetchData()
+    }, 350)
+  }
+
+  async function fetchData () {
+    loading.value = true
+    const result = await peopleStore.fetchPersons({
+      page: page.value,
+      pageSize: itemsPerPage.value,
+      search: search.value,
+    })
+    if (result.success) {
+      serverItems.value = peopleStore.persons
+      totalItems.value = peopleStore.totalPersons
+    } else {
+      toast.error('Failed to load members')
+    }
+    loading.value = false
+  }
+
+  function openDialog () {
+    editingId.value = null
+    form.value = {
+      first_name: '',
+      last_name: '',
+      email: '',
+      phone_number: '',
+      area_of_residence: '',
+      is_active: true,
+      is_producer: false,
+      is_assistant_producer: false,
+      roles: [],
+    }
+    dialog.value = true
+  }
+
+  function closeDialog () {
+    dialog.value = false
+    editingId.value = null
+    bulkUploadDialog.value = false
+    csvFile.value = null
+  }
+
+  function editUser (item) {
+    form.value = {
+      first_name: item.first_name,
+      last_name: item.last_name,
+      email: item.email,
+      phone_number: item.phone_number,
+      area_of_residence: item.area_of_residence,
+      is_active: item.is_active !== false,
+      is_producer: item.is_producer,
+      is_assistant_producer: item.is_assistant_producer,
+      roles: item.roles || [],
+    }
+    editingId.value = item.id
+    dialog.value = true
+  }
+
+  async function saveUser () {
+    let result
+    if (editingId.value) {
+      result = await peopleStore.updatePerson(editingId.value, form.value)
+      if (result.success) {
+        toast.success(result.data?.message || 'User updated successfully!')
+      } else {
+        toast.error(result.error || 'Failed to save user.')
+        return
       }
-      closeDialog();
-    },
-    error: (error) => {
-      console.error('Error parsing CSV file:', error);
-      toast.error(error.response?.data?.error || 'Failed to parse CSV file.');
+    } else {
+      result = await peopleStore.createPerson(form.value)
+      if (result.success) {
+        toast.success(result.data?.message || 'User added successfully!')
+      } else {
+        toast.error(result.error || 'Failed to save user.')
+        return
+      }
     }
-  });
-
-}
-
-function confirmDelete(item) {
-  userToDelete.value = item;
-  deleteConfirmation.value = '';
-  deleteDialog.value = true;
-}
-if (deleteDialog.value) {
-  deleteConfirmation.value = '';
-  toast.warning('Please confirm deletion by typing DELETE');  
-}
-
-
-
-async function deleteUser() {
-  if (deleteConfirmation.value !== 'DELETE') {
-    toast.error('You must type DELETE to confirm.');
-    return;
+    closeDialog()
+    await fetchData()
   }
 
-  try {
-    await axios.delete('http://localhost:8000/api/persons/modify/' + userToDelete.value.id + '/');
-    serverItems.value = serverItems.value.filter(person => person.id !== userToDelete.value.id);
-    toast.success('User deleted successfully!');
-    deleteDialog.value = false;
-    userToDelete.value = null;
-  } catch (error) {
-    toast.error('Failed to delete user.');
+  async function submitBulkUpload () {
+    if (!csvFile.value) {
+      console.error('No CSV file selected')
+      toast.error('Please select a CSV file to upload.')
+      return
+    }
+
+    Papa.parse(csvFile.value, {
+      header: true,
+      complete: async results => {
+        const result = await peopleStore.bulkUpload(results.data)
+        if (result.success) {
+          console.log('Bulk upload successful:', result.data)
+          toast.success(result.data?.message || 'Bulk upload successful!')
+          closeDialog()
+          await fetchData()
+        } else {
+          toast.error(result.error || 'Failed to upload CSV file.')
+          console.error('Error during bulk upload:', result.error)
+        }
+        closeDialog()
+      },
+      error: error => {
+        console.error('Error parsing CSV file:', error)
+        toast.error('Failed to parse CSV file.')
+      },
+    })
   }
-}
 
+  function confirmDelete (item) {
+    userToDelete.value = item
+    deleteConfirmation.value = ''
+    deleteDialog.value = true
+  }
 
-// Initialize
-onMounted(fetchRoles);
+  if (deleteDialog.value) {
+    deleteConfirmation.value = ''
+    toast.warning('Please confirm deletion by typing DELETE')
+  }
+
+  async function deleteUser () {
+    if (deleteConfirmation.value !== 'DELETE') {
+      toast.error('You must type DELETE to confirm.')
+      return
+    }
+
+    const result = await peopleStore.deletePerson(userToDelete.value.id)
+    if (result.success) {
+      toast.success('User deleted successfully!')
+      deleteDialog.value = false
+      userToDelete.value = null
+      await fetchData()
+    } else {
+      toast.error(result.error || 'Failed to delete user.')
+    }
+  }
+
+  // Initialize
+  onMounted(() => {
+    fetchRoles()
+    fetchData()
+  })
 </script>
+
+<style scoped>
+.toolbar-search {
+  max-width: 480px;
+  flex: 1 1 280px;
+}
+.toolbar-search :deep(.v-field) {
+  background: rgb(var(--v-theme-surface)) !important;
+  border-radius: 12px;
+}
+.toolbar-search :deep(.v-field__prepend-inner .v-icon) {
+  color: rgb(var(--v-theme-primary));
+  opacity: .7;
+}
+</style>

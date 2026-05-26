@@ -10,52 +10,62 @@ import { createRouter, createWebHistory } from 'vue-router'
 const routes = [
   {
     path: '/',
-    redirect: '/login'
+    redirect: '/login',
   },
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/login'  
+    redirect: '/login',
   },
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/pages/login.vue')
+    component: () => import('@/pages/login.vue'),
   },
   {
     path: '/signup',
     name: 'Signup',
-    component: () => import('@/pages/signup.vue')
+    component: () => import('@/pages/signup.vue'),
   },
   {
     path: '/home',
     name: 'Home',
-    component: () => import('@/pages/home.vue')
+    component: () => import('@/pages/home.vue'),
   },
   {
     path: '/people',
     name: 'People',
-    component: () => import('@/pages/people.vue')
+    component: () => import('@/pages/people.vue'),
   },
   {
     path: '/roles',
     name: 'Roles',
-    component: () => import('@/pages/roles.vue')
+    component: () => import('@/pages/roles.vue'),
   },
   {
     path: '/events',
     name: 'Events',
-    component: () => import('@/pages/events.vue')
+    component: () => import('@/pages/events.vue'),
   },
   {
     path: '/rosters',
     name: 'Rosters',
-    component: () => import('@/pages/rosters.vue')
+    component: () => import('@/pages/rosters.vue'),
   },
   {
     path: '/feedback',
     name: 'Feedback',
-    component: () => import('@/pages/feedback.vue')
-  }
+    component: () => import('@/pages/feedback.vue'),
+  },
+  {
+    path: '/streaks',
+    name: 'Streaks',
+    component: () => import('@/pages/streaks.vue'),
+  },
+  {
+    path: '/awards',
+    name: 'Awards',
+    component: () => import('@/pages/awards.vue'),
+  },
 ]
 
 const router = createRouter({
@@ -65,35 +75,35 @@ const router = createRouter({
 
 // Authentication guard
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('auth_token');
-  const isAuthenticated = !!token;
+  const token = localStorage.getItem('auth_token')
+  const isAuthenticated = !!token
 
   // pages that don't require authentication
-  const publicPages = ['/login', '/signup'];
-  const isPublicPage = publicPages.includes(to.path);
+  const publicPages = ['/login', '/signup']
+  const isPublicPage = publicPages.includes(to.path)
 
   // redirect to login if not authenticated and trying to access a restricted page
-  if (to.path === '/'){
+  if (to.path === '/') {
     if (isAuthenticated) {
       next('/home')
-    } else{
+    } else {
       next('/login')
     }
     return
   }
-  
+
   // if not authenticated and trying to access protected page
   if (!isAuthenticated && !isPublicPage) {
-    return next('/login');
+    return next('/login')
   }
-  
+
   // if authenticated and trying to access public page, redirect to home
   if (isAuthenticated && isPublicPage) {
-    return next('/home');
+    return next('/home')
   }
-  
-  next();
-}
+
+  next()
+},
 )
 router.onError((err, to) => {
   if (err?.message?.includes?.('Failed to fetch dynamically imported module')) {
