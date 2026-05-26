@@ -1,11 +1,11 @@
-import { ref, computed } from 'vue'
-import { defineStore } from 'pinia'
 import axios from 'axios'
+import { defineStore } from 'pinia'
+import { computed, ref } from 'vue'
 
 export const useAuthStore = defineStore('auth', () => {
   // State
-  const token = ref(localStorage.getItem('token') || null)
-  const refreshToken = ref(localStorage.getItem('refreshToken') || null)
+  const token = ref(localStorage.getItem('auth_token') || null)
+  const refreshToken = ref(localStorage.getItem('auth_refresh') || null)
   const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
   const isLoading = ref(false)
 
@@ -14,80 +14,76 @@ export const useAuthStore = defineStore('auth', () => {
   const userInfo = computed(() => user.value)
 
   // Actions
-  const setAuthData = (authData) => {
-    token.value = authData.token
+  const setAuthData = authData => {
+    token.value = authData.access
     refreshToken.value = authData.refresh
     user.value = authData.user
-    
-    // Store in localStorage
-    localStorage.setItem('token', authData.token)
-    localStorage.setItem('refreshToken', authData.refresh)
+
+    // Store in localStorage — use same keys as login.vue and router guard
+    localStorage.setItem('auth_token', authData.access)
+    localStorage.setItem('auth_refresh', authData.refresh)
     localStorage.setItem('user', JSON.stringify(authData.user))
-    
+
     // Set default authorization header
-    axios.defaults.headers.common['Authorization'] = `Bearer ${authData.token}`
+    axios.defaults.headers.common['Authorization'] = `Bearer ${authData.access}`
   }
 
   const clearAuthData = () => {
     token.value = null
     refreshToken.value = null
     user.value = null
-    
+
     // Clear localStorage
-    localStorage.removeItem('token')
-    localStorage.removeItem('refreshToken')
+    localStorage.removeItem('auth_token')
+    localStorage.removeItem('auth_refresh')
     localStorage.removeItem('user')
-    
+
     // Clear authorization header
     delete axios.defaults.headers.common['Authorization']
   }
 
-  const login = async (credentials) => {
+  const login = async credentials => {
     isLoading.value = true
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/login/', credentials)
-      
-      if (response.data.token) {
+      const response = await axios.post('http://localhost:8000/api/login/', credentials)
+
+      if (response.data.access) {
         setAuthData({
-          token: response.data.token,
+          access: response.data.access,
           refresh: response.data.refresh,
-          user: response.data.user
+          user: response.data.user,
         })
         return { success: true }
       }
-      
+
       return { success: false, error: 'Invalid response from server' }
     } catch (error) {
       console.error('Login error:', error)
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Login failed. Please try again.' 
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Login failed. Please try again.',
       }
     } finally {
       isLoading.value = false
     }
   }
 
-  const signup = async (userData) => {
+  const signup = async userData => {
     isLoading.value = true
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/signup/', userData)
-      
-      if (response.data.token) {
-        setAuthData({
-          token: response.data.token,
-          refresh: response.data.refresh,
-          user: response.data.user
-        })
+      const response = await axios.post('http://localhost:8000/api/signup/', userData)
+
+      // Backend returns the created user (no token) — user must log in after signup
+      if (response.data.id) {
         return { success: true }
       }
-      
+
       return { success: false, error: 'Invalid response from server' }
     } catch (error) {
       console.error('Signup error:', error)
-      return { 
-        success: false, 
-        error: error.response?.data?.error || error.response?.data?.username?.[0] || 'Signup failed. Please try again.' 
+      return {
+        success: false,
+        error: error.response?.data?.error || error.response?.data?.username?.[0] || 'Signup failed. Please try again.',
       }
     } finally {
       isLoading.value = false
@@ -105,16 +101,21 @@ export const useAuthStore = defineStore('auth', () => {
 
     try {
       const response = await axios.post('http://localhost:8000/api/token/refresh/', {
-        refresh: refreshToken.value
+        refresh: refreshToken.value,
       })
-      
+
       if (response.data.access) {
         token.value = response.data.access
-        localStorage.setItem('token', response.data.access)
+        localStorage.setItem('auth_token', response.data.access)
+        // Save the rotated refresh token — ROTATE_REFRESH_TOKENS=True blacklists the old one.
+        if (response.data.refresh) {
+          refreshToken.value = response.data.refresh
+          localStorage.setItem('auth_refresh', response.data.refresh)
+        }
         axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`
         return true
       }
-      
+
       return false
     } catch (error) {
       console.error('Token refresh failed:', error)
@@ -135,11 +136,11 @@ export const useAuthStore = defineStore('auth', () => {
     refreshToken,
     user,
     isLoading,
-    
+
     // Getters
     isAuthenticated,
     userInfo,
-    
+
     // Actions
     login,
     signup,
@@ -147,6 +148,6 @@ export const useAuthStore = defineStore('auth', () => {
     refreshAccessToken,
     initializeAuth,
     setAuthData,
-    clearAuthData
+    clearAuthData,
   }
 })

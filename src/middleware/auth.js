@@ -1,28 +1,28 @@
 import { useAuthStore } from '@/stores/auth'
 
-export function requireAuth(to, from, next) {
+export function requireAuth (to, from, next) {
   const authStore = useAuthStore()
-  
+
   // Initialize auth state from localStorage
   authStore.initializeAuth()
-  
-  if (!authStore.isAuthenticated) {
+
+  if (authStore.isAuthenticated) {
+    next()
+  } else {
     // Redirect to login page with return url
     next({
       path: '/login',
-      query: { redirect: to.fullPath }
+      query: { redirect: to.fullPath },
     })
-  } else {
-    next()
   }
 }
 
-export function redirectIfAuthenticated(to, from, next) {
+export function redirectIfAuthenticated (to, from, next) {
   const authStore = useAuthStore()
-  
+
   // Initialize auth state from localStorage
   authStore.initializeAuth()
-  
+
   if (authStore.isAuthenticated) {
     // Redirect to home if already authenticated
     next('/home')
