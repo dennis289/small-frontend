@@ -66,6 +66,12 @@ const routes = [
     name: 'Awards',
     component: () => import('@/pages/awards.vue'),
   },
+  {
+    path: '/feedback/share/:token',
+    name: 'FeedbackShare',
+    component: () => import('@/pages/feedback-share.vue'),
+    meta: { public: true },
+  },
 ]
 
 const router = createRouter({
@@ -78,9 +84,9 @@ router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('auth_token')
   const isAuthenticated = !!token
 
-  // pages that don't require authentication
+  // pages that don't require authentication (static paths + any route with meta.public)
   const publicPages = ['/login', '/signup']
-  const isPublicPage = publicPages.includes(to.path)
+  const isPublicPage = publicPages.includes(to.path) || to.matched.some(r => r.meta?.public)
 
   // redirect to login if not authenticated and trying to access a restricted page
   if (to.path === '/') {
@@ -97,8 +103,9 @@ router.beforeEach((to, from, next) => {
     return next('/login')
   }
 
-  // if authenticated and trying to access public page, redirect to home
-  if (isAuthenticated && isPublicPage) {
+  // if authenticated and on login/signup, send them home — but leave shareable public
+  // routes (meta.public) alone so admins can preview share links while logged in.
+  if (isAuthenticated && publicPages.includes(to.path)) {
     return next('/home')
   }
 

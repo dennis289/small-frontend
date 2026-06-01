@@ -95,8 +95,8 @@
               <div class="text-center mt-6">
                 <span class="text-body-2 text-medium-emphasis">Already have an account?</span>
                 <v-btn
-                  color="primary"
                   class="ml-1"
+                  color="primary"
                   size="small"
                   to="/login"
                   variant="text"

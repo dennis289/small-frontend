@@ -1,8 +1,7 @@
 import axios from 'axios'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-
-const BASE = 'http://localhost:8000/api/'
+import api from '../api'
 
 export const useAwardsStore = defineStore('awards', () => {
   const awards = ref([])
@@ -27,7 +26,7 @@ export const useAwardsStore = defineStore('awards', () => {
       if (to) {
         params.to = to
       }
-      const res = await axios.get(BASE + 'awards/', { params })
+      const res = await api.get('/api/awards/', { params })
       awards.value = res.data.results || res.data
       totalAwards.value = res.data.count ?? awards.value.length
       return { success: true, data: awards.value }
@@ -40,7 +39,7 @@ export const useAwardsStore = defineStore('awards', () => {
 
   async function fetchStats () {
     try {
-      const res = await axios.get(BASE + 'awards/stats/')
+      const res = await api.get('/api/awards/stats/')
       stats.value = res.data
       return { success: true, data: res.data }
     } catch (error) {
@@ -50,7 +49,7 @@ export const useAwardsStore = defineStore('awards', () => {
 
   async function fetchAwardTypes () {
     try {
-      const res = await axios.get(BASE + 'award-types/')
+      const res = await api.get('/api/award-types/')
       awardTypes.value = res.data
       return { success: true, data: res.data }
     } catch (error) {
@@ -60,7 +59,7 @@ export const useAwardsStore = defineStore('awards', () => {
 
   async function fetchPersonAwards (personId) {
     try {
-      const res = await axios.get(BASE + `persons/${personId}/awards/`)
+      const res = await api.get(`/api/persons/${personId}/awards/`)
       return { success: true, data: res.data }
     } catch (error) {
       return { success: false, error: error.response?.data?.error || 'Failed to fetch person awards' }
@@ -73,7 +72,7 @@ export const useAwardsStore = defineStore('awards', () => {
       if (given_at) {
         payload.given_at = given_at
       }
-      const res = await axios.post(BASE + 'awards/', payload)
+      const res = await api.post('/api/awards/', payload)
       return { success: true, data: res.data }
     } catch (error) {
       const data = error.response?.data || {}
@@ -87,7 +86,7 @@ export const useAwardsStore = defineStore('awards', () => {
 
   async function deleteAward (id) {
     try {
-      await axios.delete(BASE + `awards/${id}/`)
+      await api.delete(`/api/awards/${id}/`)
       return { success: true }
     } catch (error) {
       return { success: false, error: error.response?.data?.error || 'Failed to delete award' }
