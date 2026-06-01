@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
+import api from '../api'
 
 export const useAuthStore = defineStore('auth', () => {
   // State
@@ -25,7 +26,7 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('user', JSON.stringify(authData.user))
 
     // Set default authorization header
-    axios.defaults.headers.common['Authorization'] = `Bearer ${authData.access}`
+    api.defaults.headers.common['Authorization'] = `Bearer ${authData.access}`
   }
 
   const clearAuthData = () => {
@@ -39,13 +40,13 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('user')
 
     // Clear authorization header
-    delete axios.defaults.headers.common['Authorization']
+    delete api.defaults.headers.common['Authorization']
   }
 
   const login = async credentials => {
     isLoading.value = true
     try {
-      const response = await axios.post('http://localhost:8000/api/login/', credentials)
+      const response = await api.post('/api/login/', credentials)
 
       if (response.data.access) {
         setAuthData({
@@ -71,7 +72,7 @@ export const useAuthStore = defineStore('auth', () => {
   const signup = async userData => {
     isLoading.value = true
     try {
-      const response = await axios.post('http://localhost:8000/api/signup/', userData)
+      const response = await api.post('/api/signup/', userData)
 
       // Backend returns the created user (no token) — user must log in after signup
       if (response.data.id) {
@@ -100,7 +101,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:8000/api/token/refresh/', {
+      const response = await api.post('/api/token/refresh/', {
         refresh: refreshToken.value,
       })
 
@@ -112,7 +113,7 @@ export const useAuthStore = defineStore('auth', () => {
           refreshToken.value = response.data.refresh
           localStorage.setItem('auth_refresh', response.data.refresh)
         }
-        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`
+        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`
         return true
       }
 
@@ -126,7 +127,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const initializeAuth = () => {
     if (token.value) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
+      api.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
     }
   }
 

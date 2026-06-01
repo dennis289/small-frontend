@@ -1,8 +1,7 @@
 import axios from 'axios'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-
-const BASE = 'http://localhost:8000/api/'
+import api from '../api'
 
 export const usePeopleStore = defineStore('people', () => {
   const persons = ref([])
@@ -16,9 +15,9 @@ export const usePeopleStore = defineStore('people', () => {
       if (search) {
         params.search = search
       }
-      const res = await axios.get(BASE + 'persons/', { params })
+      const res = await api.get('/api/persons/', { params })
       persons.value = res.data.results || res.data
-      totalPersons.value = res.data.count || res.data.total || persons.value.length
+      totalPersons.value = res.data.count || res.data.total || Math.max(persons.value.length, 0)
       return { success: true }
     } catch (error) {
       return { success: false, error: error.response?.data?.error || 'Failed to fetch persons' }
@@ -29,7 +28,7 @@ export const usePeopleStore = defineStore('people', () => {
 
   async function fetchActivePersons () {
     try {
-      const res = await axios.get(BASE + 'persons/active/')
+      const res = await api.get('/api/persons/active/')
       return { success: true, data: res.data }
     } catch (error) {
       return { success: false, error: error.response?.data?.error || 'Failed to fetch active persons' }
@@ -38,7 +37,7 @@ export const usePeopleStore = defineStore('people', () => {
 
   async function createPerson (data) {
     try {
-      const res = await axios.post(BASE + 'persons/', data)
+      const res = await api.post('/api/persons/', data)
       return { success: true, data: res.data }
     } catch (error) {
       return { success: false, error: error.response?.data?.error || 'Failed to create person' }
@@ -47,7 +46,7 @@ export const usePeopleStore = defineStore('people', () => {
 
   async function updatePerson (id, data) {
     try {
-      const res = await axios.put(BASE + `persons/modify/${id}/`, { ...data, id })
+      const res = await api.put(`/api/persons/modify/${id}/`, { ...data, id })
       return { success: true, data: res.data }
     } catch (error) {
       return { success: false, error: error.response?.data?.error || 'Failed to update person' }
@@ -56,7 +55,7 @@ export const usePeopleStore = defineStore('people', () => {
 
   async function deletePerson (id) {
     try {
-      await axios.delete(BASE + `persons/modify/${id}/`)
+      await api.delete(`/api/persons/modify/${id}/`)
       return { success: true }
     } catch (error) {
       return { success: false, error: error.response?.data?.error || 'Failed to delete person' }
@@ -65,7 +64,7 @@ export const usePeopleStore = defineStore('people', () => {
 
   async function bulkUpload (data) {
     try {
-      const res = await axios.post(BASE + 'persons/bulk-upload/', { data })
+      const res = await api.post('/api/persons/bulk-upload/', { data })
       return { success: true, data: res.data }
     } catch (error) {
       return { success: false, error: error.response?.data?.error || 'Failed to bulk upload' }
@@ -74,7 +73,7 @@ export const usePeopleStore = defineStore('people', () => {
 
   async function fetchStreaks () {
     try {
-      const res = await axios.get(BASE + 'persons/streaks/')
+      const res = await api.get('/api/persons/streaks/')
       return { success: true, data: res.data }
     } catch (error) {
       return { success: false, error: error.response?.data?.error || 'Failed to fetch streaks' }

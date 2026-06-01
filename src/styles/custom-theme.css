@@ -45,7 +45,7 @@
 .v-theme--dark .v-application__wrap {
   min-height: 100vh;
   background:
-    radial-gradient(ellipse 80% 55% at 92% -8%,  rgba(197,138,110,0.10) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 55% at 92% -8%,  rgba(228, 166, 136, 0.1) 0%, transparent 55%),
     radial-gradient(ellipse 60% 45% at -5% 105%, rgba(168,162,158,0.06) 0%, transparent 50%),
     #14110E;
 }

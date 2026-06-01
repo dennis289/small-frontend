@@ -1,8 +1,7 @@
 import axios from 'axios'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-
-const BASE = 'http://localhost:8000/api/'
+import api from '../api'
 
 export const useRostersStore = defineStore('rosters', () => {
   const rosters = ref([])
@@ -11,7 +10,7 @@ export const useRostersStore = defineStore('rosters', () => {
   async function fetchRosters () {
     loading.value = true
     try {
-      const res = await axios.get(BASE + 'rosters/')
+      const res = await api.get('/api/rosters/')
       rosters.value = res.data
       return { success: true, data: res.data }
     } catch (error) {
@@ -23,7 +22,7 @@ export const useRostersStore = defineStore('rosters', () => {
 
   async function createRoster (payload) {
     try {
-      const res = await axios.post(BASE + 'rosters/', payload)
+      const res = await api.post('/api/rosters/', payload)
       return { success: true, data: res.data }
     } catch (error) {
       return { success: false, error: error.response?.data?.error || 'Failed to generate roster' }
@@ -32,7 +31,7 @@ export const useRostersStore = defineStore('rosters', () => {
 
   async function downloadRosterPDF (payload) {
     try {
-      const res = await axios.post(BASE + 'generate-roster/', payload, { responseType: 'blob' })
+      const res = await api.post('/api/generate-roster/', payload, { responseType: 'blob' })
       return { success: true, data: res.data }
     } catch {
       return { success: false, error: 'Failed to download PDF' }
@@ -41,7 +40,7 @@ export const useRostersStore = defineStore('rosters', () => {
 
   async function saveRoster (payload) {
     try {
-      const res = await axios.post(BASE + 'rosters/save/', payload)
+      const res = await api.post('/api/rosters/save/', payload)
       return { success: true, data: res.data }
     } catch (error) {
       return { success: false, error: error.response?.data?.error || 'Failed to save roster' }
@@ -50,7 +49,7 @@ export const useRostersStore = defineStore('rosters', () => {
 
   async function fetchRosterPersons (rosterId) {
     try {
-      const res = await axios.get(BASE + `rosters/${rosterId}/persons/`)
+      const res = await api.get(`/api/rosters/${rosterId}/persons/`)
       return { success: true, data: res.data }
     } catch (error) {
       return { success: false, error: error.response?.data?.error || 'Failed to fetch roster members' }
@@ -59,7 +58,7 @@ export const useRostersStore = defineStore('rosters', () => {
 
   async function submitFeedback (rosterId, feedback) {
     try {
-      await axios.post(BASE + `rosters/${rosterId}/feedback/`, { feedback })
+      await api.post(`/api/rosters/${rosterId}/feedback/`, { feedback })
       return { success: true }
     } catch (error) {
       return { success: false, error: error.response?.data?.error || 'Failed to submit feedback' }

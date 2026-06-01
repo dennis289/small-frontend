@@ -379,7 +379,7 @@
   )
 
   const stats = computed(() => [
-    { label: 'People', count: peopleStore.totalPersons || peopleStore.persons.length, icon: 'mdi-account-multiple-outline', route: '/people' },
+    { label: 'People', count: peopleStore.totalPersons || Math.max(peopleStore.persons.length, 0), icon: 'mdi-account-multiple-outline', route: '/people' },
     { label: 'Roles', count: rolesStore.roles.length, icon: 'mdi-shape-outline', route: '/roles' },
     { label: 'Events', count: eventsStore.events.length, icon: 'mdi-calendar-outline', route: '/events' },
     { label: 'Rosters', count: rostersStore.rosters.length, icon: 'mdi-clipboard-text-outline', route: '/rosters' },

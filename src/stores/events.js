@@ -1,8 +1,7 @@
 import axios from 'axios'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-
-const BASE = 'http://localhost:8000/api/'
+import api from '../api'
 
 export const useEventsStore = defineStore('events', () => {
   const events = ref([])
@@ -11,7 +10,7 @@ export const useEventsStore = defineStore('events', () => {
   async function fetchEvents () {
     loading.value = true
     try {
-      const res = await axios.get(BASE + 'events/')
+      const res = await api.get('/api/events/')
       events.value = res.data
       return { success: true }
     } catch (error) {
@@ -23,7 +22,7 @@ export const useEventsStore = defineStore('events', () => {
 
   async function createEvent (data) {
     try {
-      const res = await axios.post(BASE + 'events/', data)
+      const res = await api.post('/api/events/', data)
       return { success: true, data: res.data }
     } catch (error) {
       return { success: false, error: error.response?.data?.error || 'Failed to create event' }
@@ -32,7 +31,7 @@ export const useEventsStore = defineStore('events', () => {
 
   async function updateEvent (id, data) {
     try {
-      const res = await axios.put(BASE + `events/modify/${id}/`, data)
+      const res = await api.put(`/api/events/modify/${id}/`, data)
       return { success: true, data: res.data }
     } catch (error) {
       return { success: false, error: error.response?.data?.error || 'Failed to update event' }
@@ -41,7 +40,7 @@ export const useEventsStore = defineStore('events', () => {
 
   async function deleteEvent (id) {
     try {
-      await axios.delete(BASE + `events/modify/${id}/`, { data: { id } })
+      await api.delete(`/api/events/modify/${id}/`, { data: { id } })
       return { success: true }
     } catch (error) {
       return { success: false, error: error.response?.data?.error || 'Failed to delete event' }

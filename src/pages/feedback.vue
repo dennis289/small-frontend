@@ -27,8 +27,72 @@
           prepend-inner-icon="mdi-calendar-star-outline"
           @update:model-value="loadPersons"
         />
+        <div v-if="selectedRosterDate" class="mt-4 d-flex align-center justify-space-between flex-wrap" style="gap: 12px;">
+          <span class="text-caption text-medium-emphasis">
+            Need someone else to fill this in? Generate a one-time link to share.
+          </span>
+          <v-btn
+            color="primary"
+            :loading="generatingLink"
+            prepend-icon="mdi-link-variant"
+            size="small"
+            variant="outlined"
+            @click="generateShareLink"
+          >Generate share link</v-btn>
+        </div>
       </v-card>
     </div>
+
+    <!-- Share-link dialog -->
+    <v-dialog v-model="shareDialog" max-width="560">
+      <v-card rounded="lg">
+        <div class="pa-5 d-flex align-center gap-3">
+          <v-icon color="primary" size="22">mdi-link-variant</v-icon>
+          <div>
+            <div class="text-overline font-weight-bold" style="letter-spacing:.18em; opacity:.7;">
+              One-time use
+            </div>
+            <h3 class="text-h6 font-serif font-weight-medium">Feedback share link</h3>
+          </div>
+        </div>
+        <v-divider />
+        <v-card-text class="pa-5">
+          <p class="text-body-2 text-medium-emphasis mb-3">
+            Send this link to whoever will mark attendance for
+            <strong>{{ formatShareDate(shareLinkDate) }}</strong>. The link can be opened once
+            and stops working after the form is submitted.
+          </p>
+          <v-text-field
+            ref="shareUrlField"
+            v-model="shareUrl"
+            density="comfortable"
+            hide-details
+            readonly
+            variant="outlined"
+            @focus="$event.target.select()"
+          />
+          <div class="d-flex gap-2 mt-3">
+            <v-btn
+              :color="copied ? 'success' : 'primary'"
+              :prepend-icon="copied ? 'mdi-check' : 'mdi-content-copy'"
+              variant="flat"
+              @click="copyShareUrl"
+            >{{ copied ? 'Copied' : 'Copy link' }}</v-btn>
+            <v-btn
+              prepend-icon="mdi-open-in-new"
+              :href="shareUrl"
+              target="_blank"
+              variant="outlined"
+            >Open preview</v-btn>
+          </div>
+        </v-card-text>
+        <v-divider />
+        <v-card-actions class="px-5 py-3">
+          <v-spacer />
+          <v-btn variant="text" @click="shareDialog = false">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <!-- Step 2 — attendance + feedback -->
     <div v-if="persons.length > 0" class="step-block">
@@ -190,18 +254,32 @@
 </template>
 
 <script setup>
+  import axios from 'axios'
   import { computed, onMounted, ref } from 'vue'
   import { toast } from 'vue-sonner'
   import { useRostersStore } from '@/stores/rosters'
 
+  const BASE = 'http://localhost:8000/api/'
+
   const rostersStore = useRostersStore()
 
   const rosters = ref([])
+  const rosterDateById = ref({})
   const selectedRosterId = ref(null)
   const persons = ref([])
   const loading = ref(false)
   const saving = ref(false)
   const loadingRosters = ref(false)
+
+  const generatingLink = ref(false)
+  const shareDialog = ref(false)
+  const shareUrl = ref('')
+  const shareLinkDate = ref(null)
+  const copied = ref(false)
+
+  const selectedRosterDate = computed(
+    () => (selectedRosterId.value ? rosterDateById.value[selectedRosterId.value] : null),
+  )
 
   const categories = [
     { value: 'general', label: 'General' },
@@ -228,10 +306,50 @@
         id: r.id,
         label: `${r.event_name} — ${r.date}`,
       }))
+      rosterDateById.value = Object.fromEntries(result.data.map(r => [r.id, r.date]))
     } else {
       toast.error(result.error || 'Failed to load rosters')
     }
     loadingRosters.value = false
+  }
+
+  function formatShareDate (d) {
+    if (!d) {
+      return ''
+    }
+    return new Date(d + 'T00:00:00').toLocaleDateString('en-US', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+    })
+  }
+
+  async function generateShareLink () {
+    if (!selectedRosterDate.value) {
+      return
+    }
+    generatingLink.value = true
+    try {
+      const res = await axios.post(`${BASE}feedback/share/links/`, {
+        date: selectedRosterDate.value,
+      })
+      shareLinkDate.value = res.data.date
+      shareUrl.value = `${window.location.origin}/feedback/share/${res.data.token}`
+      copied.value = false
+      shareDialog.value = true
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to generate share link')
+    } finally {
+      generatingLink.value = false
+    }
+  }
+
+  async function copyShareUrl () {
+    try {
+      await navigator.clipboard.writeText(shareUrl.value)
+      copied.value = true
+      setTimeout(() => { copied.value = false }, 2000)
+    } catch {
+      toast.error('Could not copy. Long-press the link instead.')
+    }
   }
 
   async function loadPersons () {

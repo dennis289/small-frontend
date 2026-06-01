@@ -410,9 +410,9 @@
           <v-autocomplete
             v-model="selectedMember"
             chips
+            class="mb-4"
             clearable
             closable-chips
-            class="mb-4"
             item-title="fullname"
             item-value="id"
             :items="members"
@@ -512,6 +512,7 @@
   }
 
   function enterEditMode () {
+    // eslint-disable-next-line unicorn/prefer-structured-clone -- structuredClone chokes on Vue reactive proxies
     editableRoster.value = JSON.parse(JSON.stringify(roster.value))
     // Map producer/AP to the items shape so the autocompletes pre-fill them
     if (editableRoster.value.producer?.id) {
@@ -588,7 +589,8 @@
 
   async function downloadRosterPDF () {
     if (!roster.value) {
-      toast.error('No roster to download.'); return
+      toast.error('No roster to download.')
+      return
     }
     const result = await rostersStore.downloadRosterPDF({
       roster_data: roster.value,
@@ -613,6 +615,7 @@
     saving.value = true
     const dataToSave = editMode.value ? editableRoster.value : roster.value
     if (editMode.value) {
+      // eslint-disable-next-line unicorn/prefer-structured-clone -- structuredClone chokes on Vue reactive proxies
       roster.value = JSON.parse(JSON.stringify(editableRoster.value))
       editMode.value = false
     }

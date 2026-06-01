@@ -1,8 +1,7 @@
 import axios from 'axios'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-
-const BASE = 'http://localhost:8000/api/'
+import api from '../api'
 
 export const useUserStore = defineStore('user', () => {
   const profile = ref(JSON.parse(localStorage.getItem('user') || '{}'))
@@ -14,7 +13,7 @@ export const useUserStore = defineStore('user', () => {
     }
     loading.value = true
     try {
-      const res = await axios.get(BASE + 'user/profile/')
+      const res = await api.get('/api/user/profile/')
       profile.value = res.data
       localStorage.setItem('user', JSON.stringify(res.data))
       return { success: true, data: res.data }
@@ -28,7 +27,7 @@ export const useUserStore = defineStore('user', () => {
   async function updateProfile (payload) {
     loading.value = true
     try {
-      const res = await axios.patch(BASE + 'user/profile/', payload)
+      const res = await api.patch('/api/user/profile/', payload)
       profile.value = res.data
       localStorage.setItem('user', JSON.stringify(res.data))
       return { success: true, data: res.data }
