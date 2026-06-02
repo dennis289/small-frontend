@@ -432,7 +432,7 @@
   margin-left: .25em;
   color: rgb(var(--v-theme-primary-darken-1));
   font-style: italic;
-  font-weight: 600;
+  font-weight: 500;
 }
 .v-theme--dark .hero-name {
   color: rgb(var(--v-theme-primary-lighten-1));
