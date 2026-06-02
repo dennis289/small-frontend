@@ -4,7 +4,7 @@
  * Bootstraps Vuetify and other plugins then mounts the App`
  */
 
-import axios from 'axios'
+import api from './api'
 
 // Composables
 import { createApp } from 'vue'
@@ -23,7 +23,7 @@ import '@/styles/custom-theme.css'
 // page reload. Re-attach it here so the first API call after refresh is already authenticated.
 const savedToken = localStorage.getItem('auth_token')
 if (savedToken) {
-  axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`
+  api.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`
 }
 
 // Auto-refresh expired access tokens. Only redirects to /login if the refresh token itself
@@ -40,7 +40,7 @@ const processQueue = (error, token = null) => {
   refreshQueue = []
 }
 
-axios.interceptors.response.use(
+api.interceptors.response.use(
   response => response,
   async error => {
     const originalRequest = error.config
@@ -75,7 +75,7 @@ axios.interceptors.response.use(
       }
 
       try {
-        const res = await axios.post('http://localhost:8000/api/token/refresh/', {
+        const res = await api.post('/api/token/refresh/', {
           refresh: refreshToken,
         })
         const newAccess = res.data.access
@@ -88,11 +88,11 @@ axios.interceptors.response.use(
           localStorage.setItem('auth_refresh', newRefresh)
         }
 
-        axios.defaults.headers.common['Authorization'] = `Bearer ${newAccess}`
+        api.defaults.headers.common['Authorization'] = `Bearer ${newAccess}`
         originalRequest.headers['Authorization'] = `Bearer ${newAccess}`
 
         processQueue(null, newAccess)
-        return axios(originalRequest)
+        return api(originalRequest)
       } catch (error_) {
         processQueue(error_)
         localStorage.removeItem('auth_token')

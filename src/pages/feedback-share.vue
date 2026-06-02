@@ -146,12 +146,12 @@
 </template>
 
 <script setup>
-  import axios from 'axios'
+  import api from '../api'
   import { onMounted, ref } from 'vue'
   import { useRoute } from 'vue-router'
   import { toast } from 'vue-sonner'
 
-  const BASE = 'http://localhost:8000/api/'
+ 
   const route = useRoute()
 
   const loading = ref(true)
@@ -175,7 +175,7 @@
   async function loadForm () {
     loading.value = true
     try {
-      const res = await axios.get(`${BASE}feedback/share/${route.params.token}/`)
+      const res = await api.get(`/api/feedback/share/${route.params.token}/`)
       payload.value = res.data
       attendance.value = res.data.members.map(m => ({
         person_id: m.person_id,
@@ -201,7 +201,7 @@
   async function submitForm () {
     submitting.value = true
     try {
-      await axios.post(`${BASE}feedback/share/${route.params.token}/submit/`, {
+      await api.post(`/api/feedback/share/${route.params.token}/submit/`, {
         attendance: attendance.value.map(m => ({
           person_id: m.person_id,
           is_present: m.is_present,

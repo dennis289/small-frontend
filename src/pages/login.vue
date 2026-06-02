@@ -95,7 +95,7 @@
 </template>
 
 <script setup>
-  import axios from 'axios'
+  import api from '../api'
   import { ref } from 'vue'
   import { useRouter } from 'vue-router'
   import { toast } from 'vue-sonner'
@@ -112,7 +112,7 @@
     if (!valid) return
     loading.value = true
     try {
-      const response = await axios.post('http://localhost:8000/api/login/', {
+      const response = await api.post('/api/login/', {
         email: email.value,
         password: password.value,
       })
@@ -124,7 +124,7 @@
           username: response.data.username,
           email: response.data.email,
         }))
-        axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
+        api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
       }
       email.value = ''
       password.value = ''

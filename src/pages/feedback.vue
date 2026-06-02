@@ -254,12 +254,11 @@
 </template>
 
 <script setup>
-  import axios from 'axios'
+  import api from '../api'
   import { computed, onMounted, ref } from 'vue'
   import { toast } from 'vue-sonner'
   import { useRostersStore } from '@/stores/rosters'
 
-  const BASE = 'http://localhost:8000/api/'
 
   const rostersStore = useRostersStore()
 
@@ -328,7 +327,7 @@
     }
     generatingLink.value = true
     try {
-      const res = await axios.post(`${BASE}feedback/share/links/`, {
+      const res = await api.post(`/api/feedback/share/links/`, {
         date: selectedRosterDate.value,
       })
       shareLinkDate.value = res.data.date

@@ -111,7 +111,7 @@
 </template>
 
 <script setup>
-  import axios from 'axios'
+  import api from '../api'
   import { ref } from 'vue'
   import { useRouter } from 'vue-router'
 
@@ -133,7 +133,7 @@
     if (!form.value) return
     loading.value = true
     try {
-      const response = await axios.post('http://localhost:8000/api/signup/', {
+      const response = await api.post('/api/signup/', {
         username: email.value,
         fullname: fullname.value,
         email: email.value,
