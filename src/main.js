@@ -98,7 +98,7 @@ api.interceptors.response.use(
         localStorage.removeItem('auth_token')
         localStorage.removeItem('auth_refresh')
         window.location.href = '/login'
-        throw error_
+        throw error_ 
       } finally {
         isRefreshing = false
       }
