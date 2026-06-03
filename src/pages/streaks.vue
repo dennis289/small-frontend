@@ -12,7 +12,7 @@
       <div class="d-flex align-end justify-space-between flex-wrap gap-4">
         <div>
           <h1 class="hero-title font-serif">
-            Attendance <span class="hero-italic">streaks</span>
+            Attendance<span class="hero-italic">streaks</span>
           </h1>
           <p class="hero-sub text-medium-emphasis mt-2">
             Consecutive service appearances. Give an award to celebrate — and reset — a streak.
@@ -274,14 +274,16 @@
   opacity: .5;
 }
 .hero-title {
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-size: clamp(1.9rem, 3.8vw, 2.8rem);
   line-height: 1.05;
   font-weight: 500;
   margin: 0;
 }
 .hero-italic {
   font-style: italic;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 1em;
+  margin-inline-start: .12em;
   color: rgb(var(--v-theme-primary-darken-1));
 }
 .v-theme--dark .hero-italic {

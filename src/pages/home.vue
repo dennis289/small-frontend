@@ -418,7 +418,7 @@
 }
 
 .hero-title {
-  font-size: clamp(2.2rem, 4.4vw, 3.4rem);
+  font-size: clamp(1.9rem, 3.8vw, 2.8rem);
   line-height: 1.05;
   font-weight: 500;
   margin: 0;
@@ -433,6 +433,7 @@
   color: rgb(var(--v-theme-primary-darken-1));
   font-style: italic;
   font-weight: 500;
+  font-size: 1em; /* match the greeting text exactly — no size difference */
 }
 .v-theme--dark .hero-name {
   color: rgb(var(--v-theme-primary-lighten-1));

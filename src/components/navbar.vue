@@ -73,15 +73,16 @@
           <v-col cols="12">
             <v-text-field v-model="form.username" label="Username" />
           </v-col>
-          <v-col cols="12">
+          <!-- <v-col cols="12">
             <v-text-field v-model="form.email" label="Email" />
-          </v-col>
+          </v-col> -->
         </v-row>
         <v-divider class="my-3" />
         <p class="text-subtitle-2 mb-3">Theme</p>
         <v-btn-toggle
           v-model="themeStore.current"
           density="comfortable"
+          class="ga-2"
           mandatory
           variant="outlined"
           @update:model-value="themeStore.setTheme($event)"
@@ -96,7 +97,7 @@
             <v-text-field v-model="form.current_password" label="Current Password" type="password" />
           </v-col>
           <v-col cols="6">
-            <v-text-field v-model="form.new_password" label="New Password" type="password" />
+            <v-text-field v-model="form.new_password" label="New Password" type="password"  />
           </v-col>
           <v-col cols="6">
             <v-text-field
