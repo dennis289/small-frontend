@@ -22,7 +22,13 @@
   const themeStore = useThemeStore()
 
   const showNavbar = computed(() => {
+    const route = router.currentRoute.value
+    // Auth pages and any public route (e.g. the shared feedback form) render
+    // standalone — no app navigation, so non-users can't browse into the app.
     const publicPages = ['/login', '/signup']
-    return !publicPages.includes(router.currentRoute.value.path)
+    if (publicPages.includes(route.path)) {
+      return false
+    }
+    return !route.meta?.public
   })
 </script>

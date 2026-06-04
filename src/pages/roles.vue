@@ -28,7 +28,9 @@
 
     <v-card class="overflow-hidden" rounded="lg" variant="outlined">
       <v-data-table
+        density="comfortable"
         :headers="headers"
+        hover
         :items="roles"
         :search="search"
       >

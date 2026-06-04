@@ -30,6 +30,7 @@
       <v-data-table
         density="comfortable"
         :headers="headers"
+        hover
         :items="events"
         :search="search"
       >
