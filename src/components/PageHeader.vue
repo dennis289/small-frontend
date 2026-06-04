@@ -10,7 +10,7 @@
       <div class="header-title-wrap">
         <h1 class="page-title font-serif">
           {{ title }}<template v-if="italic">
-            <span class="page-title-italic"> {{ italic }}</span>
+            <span class="page-title-italic">{{ italic }}</span>
           </template>
         </h1>
         <p v-if="subtitle" class="page-sub text-medium-emphasis mt-2">{{ subtitle }}</p>
@@ -61,7 +61,9 @@
 
 .page-title-italic {
   font-style: italic;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 1em;
+  margin-inline-start: .12em;
   color: rgb(var(--v-theme-primary-darken-1));
 }
 .v-theme--dark .page-title-italic {

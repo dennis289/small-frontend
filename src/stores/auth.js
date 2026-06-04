@@ -1,7 +1,6 @@
-import axios from 'axios'
+import api from '@/api'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import api from '../api'
 
 export const useAuthStore = defineStore('auth', () => {
   // State

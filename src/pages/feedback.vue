@@ -8,96 +8,109 @@
       title="Roster"
     />
 
-    <!-- Step 1 — select roster -->
+    <!-- Step 1 — select a date -->
     <div class="step-block mb-6">
       <div class="step-marker mb-3 d-flex align-center gap-3">
         <span class="step-number font-serif">01</span>
-        <span class="step-label text-overline font-weight-bold">Select a roster</span>
+        <span class="step-label text-overline font-weight-bold">Select a date</span>
+        <v-divider class="flex-grow-1" />
+      </div>
+      <v-card class="pa-5" rounded="lg" variant="outlined">
+        <v-select
+          v-model="selectedDate"
+          hide-details
+          item-title="label"
+          item-value="value"
+          :items="availableDates"
+          label="Choose a service date"
+          :loading="loadingRosters"
+          prepend-inner-icon="mdi-calendar-outline"
+          @update:model-value="onDateSelected"
+        />
+      </v-card>
+    </div>
+
+    <!-- Step 2 — shareable all-events feedback link (shown first) -->
+    <div v-if="selectedDate" class="step-block mb-6">
+      <div class="step-marker mb-3 d-flex align-center gap-3">
+        <span class="step-number font-serif">02</span>
+        <span class="step-label text-overline font-weight-bold">Share feedback link</span>
+        <v-divider class="flex-grow-1" />
+      </div>
+      <v-card class="pa-5 share-card" rounded="lg" variant="outlined">
+        <div class="d-flex align-center gap-3 mb-4">
+          <v-avatar class="share-avatar" size="40">
+            <v-icon size="20">mdi-link-variant</v-icon>
+          </v-avatar>
+          <div>
+            <h3 class="text-subtitle-1 font-serif font-weight-medium">All-events feedback link</h3>
+            <p class="text-caption text-medium-emphasis">
+              One link covering every event on {{ formatDayLabel(selectedDate) }} — single use.
+            </p>
+          </div>
+        </div>
+
+        <v-text-field
+          v-model="shareUrl"
+          density="comfortable"
+          hide-details
+          :loading="generatingLink"
+          placeholder="Generating link…"
+          readonly
+          variant="outlined"
+          @focus="$event.target.select()"
+        />
+        <div class="d-flex gap-2 mt-3 flex-wrap">
+          <v-btn
+            :color="copied ? 'success' : 'primary'"
+            :disabled="!shareUrl"
+            :prepend-icon="copied ? 'mdi-check' : 'mdi-content-copy'"
+            variant="flat"
+            @click="copyShareUrl"
+          >{{ copied ? 'Copied' : 'Copy link' }}</v-btn>
+          <v-btn
+            :disabled="!shareUrl"
+            :href="shareUrl"
+            prepend-icon="mdi-open-in-new"
+            target="_blank"
+            variant="outlined"
+          >Open preview</v-btn>
+          <v-spacer />
+          <v-btn
+            :loading="generatingLink"
+            prepend-icon="mdi-refresh"
+            variant="text"
+            @click="generateShareForDate(selectedDate, true)"
+          >New link</v-btn>
+        </div>
+      </v-card>
+    </div>
+
+    <!-- Step 3 — record attendance manually for one event -->
+    <div v-if="selectedDate" class="step-block mb-6">
+      <div class="step-marker mb-3 d-flex align-center gap-3">
+        <span class="step-number font-serif">03</span>
+        <span class="step-label text-overline font-weight-bold">Or record attendance yourself</span>
         <v-divider class="flex-grow-1" />
       </div>
       <v-card class="pa-5" rounded="lg" variant="outlined">
         <v-select
           v-model="selectedRosterId"
+          clearable
           hide-details
           item-title="label"
           item-value="id"
-          :items="rosters"
-          label="Choose a roster"
-          :loading="loadingRosters"
+          :items="eventsForSelectedDate"
+          label="Choose an event from this date"
           prepend-inner-icon="mdi-calendar-star-outline"
           @update:model-value="loadPersons"
         />
-        <div v-if="selectedRosterDate" class="mt-4 d-flex align-center justify-space-between flex-wrap" style="gap: 12px;">
-          <span class="text-caption text-medium-emphasis">
-            Need someone else to fill this in? Generate a one-time link to share.
-          </span>
-          <v-btn
-            color="primary"
-            :loading="generatingLink"
-            prepend-icon="mdi-link-variant"
-            size="small"
-            variant="outlined"
-            @click="generateShareLink"
-          >Generate share link</v-btn>
-        </div>
       </v-card>
     </div>
 
-    <!-- Share-link dialog -->
-    <v-dialog v-model="shareDialog" max-width="560">
-      <v-card rounded="lg">
-        <div class="pa-5 d-flex align-center gap-3">
-          <v-icon color="primary" size="22">mdi-link-variant</v-icon>
-          <div>
-            <div class="text-overline font-weight-bold" style="letter-spacing:.18em; opacity:.7;">
-              One-time use
-            </div>
-            <h3 class="text-h6 font-serif font-weight-medium">Feedback share link</h3>
-          </div>
-        </div>
-        <v-divider />
-        <v-card-text class="pa-5">
-          <p class="text-body-2 text-medium-emphasis mb-3">
-            Send this link to whoever will mark attendance for
-            <strong>{{ formatShareDate(shareLinkDate) }}</strong>. The link can be opened once
-            and stops working after the form is submitted.
-          </p>
-          <v-text-field
-            ref="shareUrlField"
-            v-model="shareUrl"
-            density="comfortable"
-            hide-details
-            readonly
-            variant="outlined"
-            @focus="$event.target.select()"
-          />
-          <div class="d-flex gap-2 mt-3">
-            <v-btn
-              :color="copied ? 'success' : 'primary'"
-              :prepend-icon="copied ? 'mdi-check' : 'mdi-content-copy'"
-              variant="flat"
-              @click="copyShareUrl"
-            >{{ copied ? 'Copied' : 'Copy link' }}</v-btn>
-            <v-btn
-              prepend-icon="mdi-open-in-new"
-              :href="shareUrl"
-              target="_blank"
-              variant="outlined"
-            >Open preview</v-btn>
-          </div>
-        </v-card-text>
-        <v-divider />
-        <v-card-actions class="px-5 py-3">
-          <v-spacer />
-          <v-btn variant="text" @click="shareDialog = false">Close</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- Step 2 — attendance + feedback -->
+    <!-- Attendance + feedback for the selected event -->
     <div v-if="persons.length > 0" class="step-block">
       <div class="step-marker mb-3 d-flex align-center gap-3">
-        <span class="step-number font-serif">02</span>
         <span class="step-label text-overline font-weight-bold">Attendance &amp; feedback</span>
         <v-divider class="flex-grow-1" />
         <v-chip color="success" size="small" variant="tonal">{{ presentCount }} present</v-chip>
@@ -225,7 +238,7 @@
       <v-progress-circular color="primary" indeterminate />
     </div>
 
-    <!-- Empty state after roster selected -->
+    <!-- Empty state after an event is selected but has no members -->
     <v-alert
       v-else-if="selectedRosterId && !loading"
       class="mt-4"
@@ -233,20 +246,20 @@
       type="info"
       variant="tonal"
     >
-      No assigned members found for this roster.
+      No assigned members found for this event.
     </v-alert>
 
     <!-- Initial empty state -->
     <v-card
-      v-else-if="!selectedRosterId"
+      v-else-if="!selectedDate"
       class="pa-16 text-center empty-state"
       rounded="lg"
       variant="outlined"
     >
-      <v-icon class="mb-4" color="primary" size="48" style="opacity:.45;">mdi-clipboard-list-outline</v-icon>
-      <h3 class="text-h6 font-serif font-weight-medium mb-2">Select a roster above</h3>
+      <v-icon class="mb-4" color="primary" size="48" style="opacity:.45;">mdi-calendar-outline</v-icon>
+      <h3 class="text-h6 font-serif font-weight-medium mb-2">Select a date above</h3>
       <p class="text-body-2 text-medium-emphasis mx-auto" style="max-width: 360px;">
-        Choose a saved roster to start marking attendance and recording performance feedback.
+        Pick a service date to get a shareable feedback link for all its events, or record attendance yourself.
       </p>
     </v-card>
 
@@ -254,16 +267,15 @@
 </template>
 
 <script setup>
-  import api from '../api'
   import { computed, onMounted, ref } from 'vue'
   import { toast } from 'vue-sonner'
   import { useRostersStore } from '@/stores/rosters'
-
+  import api from '../api'
 
   const rostersStore = useRostersStore()
 
-  const rosters = ref([])
-  const rosterDateById = ref({})
+  const rawRosters = ref([])
+  const selectedDate = ref(null)
   const selectedRosterId = ref(null)
   const persons = ref([])
   const loading = ref(false)
@@ -271,14 +283,40 @@
   const loadingRosters = ref(false)
 
   const generatingLink = ref(false)
-  const shareDialog = ref(false)
   const shareUrl = ref('')
-  const shareLinkDate = ref(null)
+  const shareCache = ref({})
   const copied = ref(false)
 
-  const selectedRosterDate = computed(
-    () => (selectedRosterId.value ? rosterDateById.value[selectedRosterId.value] : null),
-  )
+  // Distinct service dates, most recent first, labelled "Sunday 12 May 2026".
+  const availableDates = computed(() => {
+    const seen = new Set()
+    const out = []
+    for (const r of rawRosters.value) {
+      if (!seen.has(r.date)) {
+        seen.add(r.date)
+        out.push({ value: r.date, label: formatDayLabel(r.date) })
+      }
+    }
+    return out.sort((a, b) => (a.value < b.value ? 1 : -1))
+  })
+
+  // Events (rosters) for the chosen date; show a timestamp when the day has more than one.
+  const eventsForSelectedDate = computed(() => {
+    if (!selectedDate.value) {
+      return []
+    }
+    const sameDay = rawRosters.value.filter(r => r.date === selectedDate.value)
+    const multi = sameDay.length > 1
+    return sameDay
+      .slice()
+      .sort((a, b) => (a.created_at || '').localeCompare(b.created_at || ''))
+      .map(r => ({
+        id: r.id,
+        label: multi
+          ? `${r.event_name || 'Event'} · ${formatTime(r.created_at)}`
+          : (r.event_name || 'Event'),
+      }))
+  })
 
   const categories = [
     { value: 'general', label: 'General' },
@@ -297,43 +335,63 @@
 
   onMounted(fetchRosters)
 
+  function formatDayLabel (dateStr) {
+    if (!dateStr) {
+      return ''
+    }
+    // e.g. "Sunday 12 May 2026"
+    return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-GB', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    })
+  }
+
+  function formatTime (ts) {
+    if (!ts) {
+      return ''
+    }
+    return new Date(ts).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+  }
+
   async function fetchRosters () {
     loadingRosters.value = true
     const result = await rostersStore.fetchRosters()
     if (result.success) {
-      rosters.value = result.data.map(r => ({
-        id: r.id,
-        label: `${r.event_name} — ${r.date}`,
-      }))
-      rosterDateById.value = Object.fromEntries(result.data.map(r => [r.id, r.date]))
+      rawRosters.value = result.data
     } else {
       toast.error(result.error || 'Failed to load rosters')
     }
     loadingRosters.value = false
   }
 
-  function formatShareDate (d) {
-    if (!d) {
-      return ''
+  // Selecting a date resets the manual flow and surfaces the all-events link first.
+  function onDateSelected (date) {
+    selectedRosterId.value = null
+    persons.value = []
+    if (date) {
+      generateShareForDate(date)
     }
-    return new Date(d + 'T00:00:00').toLocaleDateString('en-US', {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-    })
   }
 
-  async function generateShareLink () {
-    if (!selectedRosterDate.value) {
+  async function generateShareForDate (date, force = false) {
+    if (!date) {
+      return
+    }
+    // Reuse a link already generated for this date this session unless forced.
+    if (!force && shareCache.value[date]) {
+      shareUrl.value = shareCache.value[date]
+      copied.value = false
       return
     }
     generatingLink.value = true
+    shareUrl.value = ''
     try {
-      const res = await api.post(`/api/feedback/share/links/`, {
-        date: selectedRosterDate.value,
-      })
-      shareLinkDate.value = res.data.date
-      shareUrl.value = `${window.location.origin}/feedback/share/${res.data.token}`
+      const res = await api.post('/api/feedback/share/links/', { date })
+      // Prefer the absolute URL the backend builds from FRONTEND_BASE_URL (always
+      // reachable); fall back to this app's own origin in local dev.
+      const url = res.data.share_url || `${window.location.origin}/feedback/share/${res.data.token}`
+      shareCache.value[date] = url
+      shareUrl.value = url
       copied.value = false
-      shareDialog.value = true
     } catch (error) {
       toast.error(error.response?.data?.error || 'Failed to generate share link')
     } finally {
@@ -345,7 +403,9 @@
     try {
       await navigator.clipboard.writeText(shareUrl.value)
       copied.value = true
-      setTimeout(() => { copied.value = false }, 2000)
+      setTimeout(() => {
+        copied.value = false
+      }, 2000)
     } catch {
       toast.error('Could not copy. Long-press the link instead.')
     }
@@ -391,6 +451,22 @@
 <style scoped>
 .absent-row {
   background: rgba(var(--v-theme-error), 0.04);
+}
+
+/* Share-link card */
+.share-card {
+  background: linear-gradient(135deg, rgba(160, 101, 74, 0.05), rgb(var(--v-theme-surface)) 60%) !important;
+}
+.v-theme--dark .share-card {
+  background: linear-gradient(135deg, rgba(197, 138, 110, 0.08), rgb(var(--v-theme-surface)) 60%) !important;
+}
+.share-avatar {
+  background: rgb(var(--v-theme-surface-variant)) !important;
+  color: rgb(var(--v-theme-primary));
+  border: 1px solid rgba(160, 101, 74, 0.20);
+}
+.v-theme--dark .share-avatar {
+  border-color: rgba(197, 138, 110, 0.22);
 }
 
 /* Step blocks */

@@ -7,7 +7,7 @@
         Roster feedback
       </div>
       <h1 class="hero-title font-serif mt-2">
-        Mark <span class="hero-italic">attendance</span>
+        Mark<span class="hero-italic">attendance</span>
       </h1>
       <p v-if="payload?.date" class="text-body-2 text-medium-emphasis mt-2">
         For <strong>{{ formatDate(payload.date) }}</strong>
@@ -38,7 +38,12 @@
 
     <!-- Form -->
     <template v-else-if="payload">
-      <!-- Events overview -->
+      <p class="text-body-2 text-medium-emphasis mb-4">
+        For each role below, mark whether the assigned member was present or absent.
+        Everyone defaults to <strong>present</strong>.
+      </p>
+
+      <!-- One card per event; attendance is marked on the same row as each role -->
       <v-card
         v-for="event in payload.events"
         :key="event.roster_id"
@@ -54,58 +59,52 @@
             {{ event.assignments.length }} roles
           </v-chip>
         </div>
-        <v-list density="compact">
-          <v-list-item v-for="a in event.assignments" :key="`${event.roster_id}-${a.person_id}-${a.role}`">
-            <template #prepend>
-              <v-chip
-                class="mr-3"
-                color="secondary"
-                label
-                size="x-small"
-                variant="tonal"
-              >{{ a.role }}</v-chip>
-            </template>
-            <v-list-item-title class="text-body-2">{{ a.name }}</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-card>
 
-      <!-- Attendance -->
-      <div class="section-label d-flex align-center gap-3 mt-6 mb-3">
-        <span class="text-overline font-weight-bold" style="letter-spacing:.2em;">Attendance</span>
-        <v-divider class="flex-grow-1" />
-      </div>
+        <v-list class="py-0" density="comfortable">
+          <template v-for="(a, idx) in event.assignments" :key="`${event.roster_id}-${a.role}-${idx}`">
+            <v-divider v-if="idx > 0" />
+            <v-list-item
+              class="role-row py-3"
+              :class="{ 'role-row-absent': a.person_id && presence[a.person_id] === false }"
+            >
+              <v-row align="center" no-gutters>
+                <!-- Role + assigned member -->
+                <v-col cols="12" sm="6">
+                  <div class="d-flex align-center gap-3">
+                    <v-chip
+                      color="secondary"
+                      label
+                      size="x-small"
+                      style="min-width: 92px; justify-content: center;"
+                      variant="tonal"
+                    >{{ a.role }}</v-chip>
+                    <span class="text-body-2 font-weight-medium">
+                      {{ a.name || '—' }}
+                    </span>
+                  </div>
+                </v-col>
 
-      <v-card class="pa-2" rounded="lg" variant="outlined">
-        <v-list density="comfortable">
-          <v-list-item
-            v-for="(member, idx) in attendance"
-            :key="member.person_id"
-            :class="{ 'attendance-row-alt': idx % 2 === 1 }"
-          >
-            <v-list-item-title class="text-body-1 font-weight-medium">
-              {{ member.name }}
-            </v-list-item-title>
-            <template #append>
-              <v-radio-group
-                v-model="member.is_present"
-                class="attendance-radios"
-                hide-details
-                inline
-              >
-                <v-radio color="success" :value="true">
-                  <template #label>
-                    <span class="text-body-2">Present</span>
-                  </template>
-                </v-radio>
-                <v-radio color="error" :value="false">
-                  <template #label>
-                    <span class="text-body-2">Absent</span>
-                  </template>
-                </v-radio>
-              </v-radio-group>
-            </template>
-          </v-list-item>
+                <!-- Present / Absent on the same row -->
+                <v-col cols="12" sm="6">
+                  <v-radio-group
+                    v-if="a.person_id"
+                    v-model="presence[a.person_id]"
+                    class="attendance-radios mt-2 mt-sm-0"
+                    hide-details
+                    inline
+                  >
+                    <v-radio color="success" :value="true">
+                      <template #label><span class="text-body-2">Present</span></template>
+                    </v-radio>
+                    <v-radio color="error" :value="false">
+                      <template #label><span class="text-body-2">Absent</span></template>
+                    </v-radio>
+                  </v-radio-group>
+                  <span v-else class="text-caption text-medium-emphasis font-italic">Unassigned</span>
+                </v-col>
+              </v-row>
+            </v-list-item>
+          </template>
         </v-list>
       </v-card>
 
@@ -146,12 +145,11 @@
 </template>
 
 <script setup>
-  import api from '../api'
   import { onMounted, ref } from 'vue'
   import { useRoute } from 'vue-router'
   import { toast } from 'vue-sonner'
+  import api from '../api'
 
- 
   const route = useRoute()
 
   const loading = ref(true)
@@ -160,7 +158,7 @@
   const error = ref(null)
   const errorTitle = ref('Something went wrong')
   const payload = ref(null)
-  const attendance = ref([])
+  const presence = ref({}) // person_id -> true (present) / false (absent)
   const globalFeedback = ref('')
 
   function formatDate (d) {
@@ -177,11 +175,13 @@
     try {
       const res = await api.get(`/api/feedback/share/${route.params.token}/`)
       payload.value = res.data
-      attendance.value = res.data.members.map(m => ({
-        person_id: m.person_id,
-        name: m.name,
-        is_present: true,
-      }))
+      // Default everyone to present. Keyed by person_id so a member assigned to
+      // more than one event/role shares a single present/absent value.
+      const initial = {}
+      for (const m of res.data.members) {
+        initial[m.person_id] = true
+      }
+      presence.value = initial
     } catch (error_) {
       const status = error_.response?.status
       if (status === 404) {
@@ -202,9 +202,9 @@
     submitting.value = true
     try {
       await api.post(`/api/feedback/share/${route.params.token}/submit/`, {
-        attendance: attendance.value.map(m => ({
-          person_id: m.person_id,
-          is_present: m.is_present,
+        attendance: Object.entries(presence.value).map(([personId, isPresent]) => ({
+          person_id: Number(personId),
+          is_present: isPresent,
         })),
         global_feedback: globalFeedback.value,
       })
@@ -229,14 +229,16 @@
 
 <style scoped>
 .hero-title {
-  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  font-size: clamp(1.9rem, 3.8vw, 2.8rem);
   line-height: 1.1;
   font-weight: 500;
   margin: 0;
 }
 .hero-italic {
   font-style: italic;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 1em;
+  margin-inline-start: .12em;
   color: rgb(var(--v-theme-primary-darken-1));
 }
 .v-theme--dark .hero-italic {
@@ -251,11 +253,8 @@
   border-bottom-color: rgba(197, 138, 110, 0.12);
 }
 
-.attendance-row-alt {
-  background: rgba(0, 0, 0, 0.02);
-}
-.v-theme--dark .attendance-row-alt {
-  background: rgba(255, 255, 255, 0.03);
+.role-row-absent {
+  background: rgba(var(--v-theme-error), 0.05);
 }
 
 .attendance-radios {
@@ -263,12 +262,5 @@
 }
 .attendance-radios :deep(.v-selection-control) {
   margin-inline-end: 12px;
-}
-
-@media (max-width: 600px) {
-  .attendance-radios :deep(.v-selection-control-group) {
-    flex-direction: column;
-    align-items: flex-end;
-  }
 }
 </style>

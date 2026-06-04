@@ -12,7 +12,7 @@
       <div class="d-flex align-end justify-space-between flex-wrap gap-4">
         <div>
           <h1 class="hero-title font-serif">
-            Member <span class="hero-italic">awards</span>
+            Member<span class="hero-italic">awards</span>
           </h1>
           <p class="hero-sub text-medium-emphasis mt-2">
             A full record of recognition given. Each award ends a streak — and starts the next.
@@ -453,14 +453,16 @@
   opacity: .5;
 }
 .hero-title {
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-size: clamp(1.9rem, 3.8vw, 2.8rem);
   line-height: 1.05;
   font-weight: 500;
   margin: 0;
 }
 .hero-italic {
   font-style: italic;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 1em;
+  margin-inline-start: .12em;
   color: rgb(var(--v-theme-primary-darken-1));
 }
 .v-theme--dark .hero-italic {
