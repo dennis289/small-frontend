@@ -32,7 +32,9 @@
       <v-data-table-server
         v-model:items-per-page="itemsPerPage"
         v-model:page="page"
+        density="comfortable"
         :headers="headers"
+        hover
         :items="serverItems"
         :items-length="totalItems"
         :loading="loading"

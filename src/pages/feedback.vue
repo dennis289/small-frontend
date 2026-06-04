@@ -263,6 +263,79 @@
       </p>
     </v-card>
 
+    <!-- Collected feedback history -->
+    <div v-if="summaries.length > 0" class="step-block mt-10">
+      <div class="step-marker mb-3 d-flex align-center gap-3">
+        <span class="step-label text-overline font-weight-bold">Collected feedback</span>
+        <v-divider class="flex-grow-1" />
+        <v-btn
+          :loading="loadingSummary"
+          prepend-icon="mdi-refresh"
+          size="small"
+          variant="text"
+          @click="fetchSummary"
+        >Refresh</v-btn>
+      </div>
+
+      <v-expansion-panels variant="accordion">
+        <v-expansion-panel v-for="s in summaries" :key="s.date" rounded="lg">
+          <v-expansion-panel-title>
+            <div class="d-flex align-center flex-wrap gap-3" style="width: 100%;">
+              <span class="font-weight-medium">{{ formatDayLabel(s.date) }}</span>
+              <v-chip color="success" size="x-small" variant="tonal">{{ s.present_count }} present</v-chip>
+              <v-chip
+                v-if="s.absent_count"
+                color="error"
+                size="x-small"
+                variant="tonal"
+              >{{ s.absent_count }} absent</v-chip>
+            </div>
+          </v-expansion-panel-title>
+          <v-expansion-panel-text>
+            <div class="mb-3">
+              <p class="text-caption text-uppercase text-medium-emphasis mb-2" style="letter-spacing:.08em;">
+                Present
+              </p>
+              <div v-if="s.present.length > 0" class="d-flex flex-wrap gap-1">
+                <v-chip
+                  v-for="name in s.present"
+                  :key="name"
+                  color="success"
+                  size="small"
+                  variant="tonal"
+                >{{ name }}</v-chip>
+              </div>
+              <span v-else class="text-caption text-medium-emphasis font-italic">No one marked present</span>
+            </div>
+
+            <div v-if="s.absent.length > 0" class="mb-3">
+              <p class="text-caption text-uppercase text-medium-emphasis mb-2" style="letter-spacing:.08em;">
+                Absent
+              </p>
+              <div class="d-flex flex-wrap gap-1">
+                <v-chip
+                  v-for="name in s.absent"
+                  :key="name"
+                  color="error"
+                  size="small"
+                  variant="tonal"
+                >{{ name }}</v-chip>
+              </div>
+            </div>
+
+            <div>
+              <p class="text-caption text-uppercase text-medium-emphasis mb-1" style="letter-spacing:.08em;">
+                Feedback of the day
+              </p>
+              <p class="text-body-2">
+                {{ s.feedback || '—' }}
+              </p>
+            </div>
+          </v-expansion-panel-text>
+        </v-expansion-panel>
+      </v-expansion-panels>
+    </div>
+
   </v-container>
 </template>
 
@@ -275,24 +348,30 @@
   const rostersStore = useRostersStore()
 
   const rawRosters = ref([])
+  const summaries = ref([])
   const selectedDate = ref(null)
   const selectedRosterId = ref(null)
   const persons = ref([])
   const loading = ref(false)
   const saving = ref(false)
   const loadingRosters = ref(false)
+  const loadingSummary = ref(false)
 
   const generatingLink = ref(false)
   const shareUrl = ref('')
   const shareCache = ref({})
   const copied = ref(false)
 
-  // Distinct service dates, most recent first, labelled "Sunday 12 May 2026".
+  // Dates that already have collected feedback — excluded from the picker.
+  const collectedDates = computed(() => new Set(summaries.value.map(s => s.date)))
+
+  // Distinct service dates with NO feedback yet, most recent first,
+  // labelled "Sunday 12 May 2026".
   const availableDates = computed(() => {
     const seen = new Set()
     const out = []
     for (const r of rawRosters.value) {
-      if (!seen.has(r.date)) {
+      if (!seen.has(r.date) && !collectedDates.value.has(r.date)) {
         seen.add(r.date)
         out.push({ value: r.date, label: formatDayLabel(r.date) })
       }
@@ -333,7 +412,10 @@
     return ((p.first_name?.[0] || '') + (p.last_name?.[0] || '')).toUpperCase()
   }
 
-  onMounted(fetchRosters)
+  onMounted(() => {
+    fetchRosters()
+    fetchSummary()
+  })
 
   function formatDayLabel (dateStr) {
     if (!dateStr) {
@@ -361,6 +443,17 @@
       toast.error(result.error || 'Failed to load rosters')
     }
     loadingRosters.value = false
+  }
+
+  async function fetchSummary () {
+    loadingSummary.value = true
+    try {
+      const res = await api.get('/api/feedback/summary/')
+      summaries.value = res.data
+    } catch {
+      // Non-fatal — the summary is informational.
+    }
+    loadingSummary.value = false
   }
 
   // Selecting a date resets the manual flow and surfaces the all-events link first.
@@ -441,6 +534,12 @@
     const result = await rostersStore.submitFeedback(selectedRosterId.value, feedback)
     if (result.success) {
       toast.success('Feedback saved — streaks updated automatically.')
+      // Refresh the collected-feedback summary; the date now drops out of the picker.
+      await fetchSummary()
+      selectedRosterId.value = null
+      selectedDate.value = null
+      persons.value = []
+      shareUrl.value = ''
     } else {
       toast.error(result.error || 'Failed to save feedback')
     }
