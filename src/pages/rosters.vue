@@ -676,35 +676,35 @@
 
 /* Leadership card */
 .leadership-card {
-  background: linear-gradient(135deg, rgba(160, 101, 74, 0.05), rgb(var(--v-theme-surface)) 60%) !important;
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.05), rgb(var(--v-theme-surface)) 60%) !important;
 }
 .v-theme--dark .leadership-card {
-  background: linear-gradient(135deg, rgba(197, 138, 110, 0.08), rgb(var(--v-theme-surface)) 60%) !important;
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.08), rgb(var(--v-theme-surface)) 60%) !important;
 }
 .leadership-avatar {
   background: rgb(var(--v-theme-surface-variant)) !important;
   color: rgb(var(--v-theme-primary-darken-1));
-  border: 1px solid rgba(160, 101, 74, 0.25);
+  border: 1px solid rgba(var(--v-theme-primary), 0.25);
 }
 .v-theme--dark .leadership-avatar {
   color: rgb(var(--v-theme-primary-lighten-1));
-  border-color: rgba(197, 138, 110, 0.30);
+  border-color: rgba(var(--v-theme-primary), 0.30);
 }
 .leadership-avatar-secondary {
   color: rgb(var(--v-theme-on-surface-variant));
-  border-color: rgba(120, 113, 108, 0.30);
+  border-color: rgba(var(--v-theme-secondary), 0.30);
 }
 .v-theme--dark .leadership-avatar-secondary {
-  border-color: rgba(168, 162, 158, 0.30);
+  border-color: rgba(var(--v-theme-secondary), 0.30);
 }
 
 /* Event cards */
 .event-card-header {
   background: rgb(var(--v-theme-surface-variant));
-  border-bottom: 1px solid rgba(160, 101, 74, 0.08);
+  border-bottom: 1px solid rgba(var(--v-theme-primary), 0.08);
 }
 .v-theme--dark .event-card-header {
-  border-bottom-color: rgba(197, 138, 110, 0.10);
+  border-bottom-color: rgba(var(--v-theme-primary), 0.10);
 }
 
 /* Empty state */
@@ -714,19 +714,19 @@
 
 /* Generate dialog header */
 .generate-dialog-header {
-  background: linear-gradient(135deg, rgba(160, 101, 74, 0.06), rgba(160, 101, 74, 0.02));
-  border-bottom: 1px solid rgba(160, 101, 74, 0.10);
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.06), rgba(var(--v-theme-primary), 0.02));
+  border-bottom: 1px solid rgba(var(--v-theme-primary), 0.10);
 }
 .v-theme--dark .generate-dialog-header {
-  background: linear-gradient(135deg, rgba(197, 138, 110, 0.10), rgba(197, 138, 110, 0.03));
-  border-bottom-color: rgba(197, 138, 110, 0.12);
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.10), rgba(var(--v-theme-primary), 0.03));
+  border-bottom-color: rgba(var(--v-theme-primary), 0.12);
 }
 .generate-dialog-avatar {
   background: rgb(var(--v-theme-surface-variant)) !important;
   color: rgb(var(--v-theme-primary));
-  border: 1px solid rgba(160, 101, 74, 0.20);
+  border: 1px solid rgba(var(--v-theme-primary), 0.20);
 }
 .v-theme--dark .generate-dialog-avatar {
-  border-color: rgba(197, 138, 110, 0.22);
+  border-color: rgba(var(--v-theme-primary), 0.22);
 }
 </style>

@@ -168,8 +168,8 @@
   background:
     radial-gradient(ellipse 60% 50% at 80% 10%, rgba(255, 255, 255, 0.06), transparent 60%),
     radial-gradient(ellipse 50% 40% at 10% 90%, rgba(0, 0, 0, 0.18), transparent 60%),
-    linear-gradient(135deg, #8A5640 0%, #A0654A 50%, #B5926B 100%);
-  color: #FAF8F5;
+    linear-gradient(135deg, rgb(var(--v-theme-primary-darken-1)) 0%, rgb(var(--v-theme-primary)) 50%, #B5926B 100%);
+  color: #FFFFFF;
 }
 .auth-brand-panel::before {
   content: '';

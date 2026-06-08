@@ -123,6 +123,15 @@
         variant="outlined"
       />
 
+       <v-textarea
+        v-model="globalReccommendations"
+        auto-grow
+        label="Overall recommendations for the service"
+        placeholder="Anything you'd like to recommend about how the service could be improved..."
+        rows="4"
+        variant="outlined"
+      />
+
       <!-- Submit -->
       <div class="d-flex justify-end mt-6">
         <v-btn
@@ -160,6 +169,7 @@
   const payload = ref(null)
   const presence = ref({}) // person_id -> true (present) / false (absent)
   const globalFeedback = ref('')
+  const globalReccommendations = ref('')
 
   function formatDate (d) {
     if (!d) {
@@ -207,6 +217,7 @@
           is_present: isPresent,
         })),
         global_feedback: globalFeedback.value,
+        global_recommendations: globalReccommendations.value,
       })
       submitted.value = true
     } catch (error_) {
@@ -247,10 +258,10 @@
 
 .event-header {
   background: rgb(var(--v-theme-surface-variant));
-  border-bottom: 1px solid rgba(160, 101, 74, 0.10);
+  border-bottom: 1px solid rgba(var(--v-theme-primary), 0.10);
 }
 .v-theme--dark .event-header {
-  border-bottom-color: rgba(197, 138, 110, 0.12);
+  border-bottom-color: rgba(var(--v-theme-primary), 0.12);
 }
 
 .role-row-absent {

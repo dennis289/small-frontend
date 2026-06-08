@@ -265,6 +265,13 @@
 </script>
 
 <style scoped>
+/* Metric numbers (summary cards, podium, leaderboard) use the readable Inter
+   sans instead of the display serif — only the page hero keeps the serif. */
+.font-serif:not(.hero-title) {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  letter-spacing: -0.01em;
+}
+
 /* ── Hero ──────────────────────────────────────────────────────────────────── */
 .streaks-hero .eyebrow-rule {
   display: inline-block;
@@ -345,22 +352,22 @@
   padding: 18px 12px 14px;
   border-radius: 12px;
   background: rgb(var(--v-theme-surface));
-  border: 1px solid rgba(160, 101, 74, 0.10);
+  border: 1px solid rgba(var(--v-theme-primary), 0.10);
   width: 100%;
   position: relative;
 }
 .v-theme--dark .podium-card {
-  border-color: rgba(197, 138, 110, 0.12);
+  border-color: rgba(var(--v-theme-primary), 0.12);
 }
 .podium-card-first {
-  border-color: rgba(160, 101, 74, 0.25);
-  background: linear-gradient(180deg, rgba(160, 101, 74, 0.06), rgb(var(--v-theme-surface)) 80%);
-  box-shadow: 0 6px 24px -6px rgba(160, 101, 74, 0.20);
+  border-color: rgba(var(--v-theme-primary), 0.25);
+  background: linear-gradient(180deg, rgba(var(--v-theme-primary), 0.06), rgb(var(--v-theme-surface)) 80%);
+  box-shadow: 0 6px 24px -6px rgba(var(--v-theme-primary), 0.20);
 }
 .v-theme--dark .podium-card-first {
-  border-color: rgba(197, 138, 110, 0.28);
-  background: linear-gradient(180deg, rgba(197, 138, 110, 0.10), rgb(var(--v-theme-surface)) 80%);
-  box-shadow: 0 6px 24px -6px rgba(197, 138, 110, 0.25);
+  border-color: rgba(var(--v-theme-primary), 0.28);
+  background: linear-gradient(180deg, rgba(var(--v-theme-primary), 0.10), rgb(var(--v-theme-surface)) 80%);
+  box-shadow: 0 6px 24px -6px rgba(var(--v-theme-primary), 0.25);
 }
 
 .podium-rank {
@@ -377,18 +384,18 @@
 .podium-avatar {
   background: rgb(var(--v-theme-surface-variant)) !important;
   color: rgb(var(--v-theme-on-surface));
-  border: 1px solid rgba(160, 101, 74, 0.18);
+  border: 1px solid rgba(var(--v-theme-primary), 0.18);
 }
 .v-theme--dark .podium-avatar {
-  border-color: rgba(197, 138, 110, 0.22);
+  border-color: rgba(var(--v-theme-primary), 0.22);
 }
 .podium-avatar-first {
-  border-color: rgba(160, 101, 74, 0.40);
-  box-shadow: 0 4px 16px -3px rgba(160, 101, 74, 0.30);
+  border-color: rgba(var(--v-theme-primary), 0.40);
+  box-shadow: 0 4px 16px -3px rgba(var(--v-theme-primary), 0.30);
 }
 .v-theme--dark .podium-avatar-first {
-  border-color: rgba(197, 138, 110, 0.45);
-  box-shadow: 0 4px 16px -3px rgba(197, 138, 110, 0.32);
+  border-color: rgba(var(--v-theme-primary), 0.45);
+  box-shadow: 0 4px 16px -3px rgba(var(--v-theme-primary), 0.32);
 }
 
 .podium-name {
@@ -416,19 +423,19 @@
   align-items: flex-start;
   padding-top: 12px;
   background: rgb(var(--v-theme-surface-variant));
-  border-top: 2px solid rgba(160, 101, 74, 0.18);
+  border-top: 2px solid rgba(var(--v-theme-primary), 0.18);
   border-radius: 6px 6px 0 0;
 }
 .v-theme--dark .podium-plinth {
-  border-top-color: rgba(197, 138, 110, 0.22);
+  border-top-color: rgba(var(--v-theme-primary), 0.22);
 }
 .podium-plinth-1 {
   height: 88px;
   border-top-color: rgb(var(--v-theme-primary));
-  background: linear-gradient(180deg, rgba(160, 101, 74, 0.08), rgb(var(--v-theme-surface-variant)));
+  background: linear-gradient(180deg, rgba(var(--v-theme-primary), 0.08), rgb(var(--v-theme-surface-variant)));
 }
 .v-theme--dark .podium-plinth-1 {
-  background: linear-gradient(180deg, rgba(197, 138, 110, 0.12), rgb(var(--v-theme-surface-variant)));
+  background: linear-gradient(180deg, rgba(var(--v-theme-primary), 0.12), rgb(var(--v-theme-surface-variant)));
 }
 .podium-plinth-2 { height: 60px; }
 .podium-plinth-3 { height: 42px; }
@@ -468,30 +475,30 @@
   text-transform: uppercase;
 }
 .streak-tag-warm {
-  background: rgba(192, 133, 82, 0.12);
+  background: rgba(var(--v-theme-warning), 0.12);
   color: #8A5A35;
 }
 .v-theme--dark .streak-tag-warm {
-  background: rgba(217, 161, 118, 0.14);
+  background: rgba(var(--v-theme-warning), 0.14);
   color: #E8C2A0;
 }
 .streak-tag-hot {
-  background: rgba(160, 101, 74, 0.14);
-  color: #8A5640;
+  background: rgba(var(--v-theme-primary), 0.14);
+  color: rgb(var(--v-theme-primary-darken-1));
 }
 .v-theme--dark .streak-tag-hot {
-  background: rgba(197, 138, 110, 0.18);
-  color: #D9A082;
+  background: rgba(var(--v-theme-primary), 0.18);
+  color: rgb(var(--v-theme-primary-lighten-1));
 }
 
 /* ── Leader avatar (table & dialog) ───────────────────────────────────────── */
 .leader-avatar {
   background: rgb(var(--v-theme-surface-variant)) !important;
   color: rgb(var(--v-theme-on-surface));
-  border: 1px solid rgba(160, 101, 74, 0.16);
+  border: 1px solid rgba(var(--v-theme-primary), 0.16);
 }
 .v-theme--dark .leader-avatar {
-  border-color: rgba(197, 138, 110, 0.20);
+  border-color: rgba(var(--v-theme-primary), 0.20);
 }
 
 .rank-cell {

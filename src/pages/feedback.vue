@@ -282,10 +282,11 @@
           <v-expansion-panel-title>
             <div class="d-flex align-center flex-wrap gap-3" style="width: 100%;">
               <span class="font-weight-medium">{{ formatDayLabel(s.date) }}</span>
-              <v-chip color="success" size="x-small" variant="tonal">{{ s.present_count }} present</v-chip>
+              <v-chip class="ms-2" color="success" size="x-small" variant="tonal">{{ s.present_count }} present</v-chip>
               <v-chip
                 v-if="s.absent_count"
                 color="error"
+                class = "ms-1"
                 size="x-small"
                 variant="tonal"
               >{{ s.absent_count }} absent</v-chip>
@@ -301,6 +302,7 @@
                   v-for="name in s.present"
                   :key="name"
                   color="success"
+                  class="ms-1 mt-1"
                   size="small"
                   variant="tonal"
                 >{{ name }}</v-chip>
@@ -317,6 +319,7 @@
                   v-for="name in s.absent"
                   :key="name"
                   color="error"
+                  class="ms-1 mt-1"
                   size="small"
                   variant="tonal"
                 >{{ name }}</v-chip>
@@ -331,10 +334,69 @@
                 {{ s.feedback || '—' }}
               </p>
             </div>
+            <div>
+              <p class="text-caption text-uppercase text-medium-emphasis mb-1" style="letter-spacing:.08em;">
+                Recommendations for the day
+              </p>
+              <p class="text-body-2">
+                {{ s.recommendations || '—' }}
+              </p>
+            </div>
+
+            <div class="d-flex justify-end mt-3">
+              <v-btn
+                color="primary"
+                prepend-icon="mdi-pencil-outline"
+                size="small"
+                variant="tonal"
+                @click="openEdit(s)"
+              >Edit notes</v-btn>
+            </div>
           </v-expansion-panel-text>
         </v-expansion-panel>
       </v-expansion-panels>
     </div>
+
+    <!-- Edit day-level notes dialog -->
+    <v-dialog v-model="editDialog" max-width="560">
+      <v-card rounded="lg">
+        <v-card-title class="font-serif">
+          Edit notes — {{ formatDayLabel(editTarget?.date) }}
+        </v-card-title>
+        <v-card-text>
+          <p class="text-caption text-medium-emphasis mb-3">
+            These notes apply to the whole day and replace the existing feedback and recommendations.
+          </p>
+          <v-textarea
+            v-model="editForm.feedback"
+            auto-grow
+            class="mb-3"
+            hide-details
+            label="Feedback of the day"
+            rows="3"
+            variant="outlined"
+          />
+          <v-textarea
+            v-model="editForm.recommendations"
+            auto-grow
+            hide-details
+            label="Recommendations for the day"
+            rows="3"
+            variant="outlined"
+          />
+        </v-card-text>
+        <v-card-actions class="px-4 pb-4">
+          <v-spacer />
+          <v-btn :disabled="savingEdit" variant="text" @click="editDialog = false">Cancel</v-btn>
+          <v-btn
+            color="primary"
+            :loading="savingEdit"
+            variant="flat"
+            @click="saveEdit"
+          >Save changes</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
   </v-container>
 </template>
@@ -361,6 +423,11 @@
   const shareUrl = ref('')
   const shareCache = ref({})
   const copied = ref(false)
+
+  const editDialog = ref(false)
+  const editTarget = ref(null)
+  const editForm = ref({ feedback: '', recommendations: '' })
+  const savingEdit = ref(false)
 
   // Dates that already have collected feedback — excluded from the picker.
   const collectedDates = computed(() => new Set(summaries.value.map(s => s.date)))
@@ -454,6 +521,35 @@
       // Non-fatal — the summary is informational.
     }
     loadingSummary.value = false
+  }
+
+  function openEdit (summary) {
+    editTarget.value = summary
+    editForm.value = {
+      feedback: summary.feedback || '',
+      recommendations: summary.recommendations || '',
+    }
+    editDialog.value = true
+  }
+
+  async function saveEdit () {
+    if (!editTarget.value) return
+    savingEdit.value = true
+    try {
+      const res = await api.patch(`/api/feedback/summary/${editTarget.value.date}/`, {
+        feedback: editForm.value.feedback || '',
+        recommendations: editForm.value.recommendations || '',
+      })
+      // Reflect the saved values locally without a full refetch.
+      editTarget.value.feedback = res.data.feedback
+      editTarget.value.recommendations = res.data.recommendations
+      toast.success('Notes updated.')
+      editDialog.value = false
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to update notes')
+    } finally {
+      savingEdit.value = false
+    }
   }
 
   // Selecting a date resets the manual flow and surfaces the all-events link first.
@@ -554,18 +650,18 @@
 
 /* Share-link card */
 .share-card {
-  background: linear-gradient(135deg, rgba(160, 101, 74, 0.05), rgb(var(--v-theme-surface)) 60%) !important;
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.05), rgb(var(--v-theme-surface)) 60%) !important;
 }
 .v-theme--dark .share-card {
-  background: linear-gradient(135deg, rgba(197, 138, 110, 0.08), rgb(var(--v-theme-surface)) 60%) !important;
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.08), rgb(var(--v-theme-surface)) 60%) !important;
 }
 .share-avatar {
   background: rgb(var(--v-theme-surface-variant)) !important;
   color: rgb(var(--v-theme-primary));
-  border: 1px solid rgba(160, 101, 74, 0.20);
+  border: 1px solid rgba(var(--v-theme-primary), 0.20);
 }
 .v-theme--dark .share-avatar {
-  border-color: rgba(197, 138, 110, 0.22);
+  border-color: rgba(var(--v-theme-primary), 0.22);
 }
 
 /* Step blocks */
@@ -587,10 +683,10 @@
 
 .feedback-toolbar {
   background: rgb(var(--v-theme-surface-variant));
-  border-bottom: 1px solid rgba(160, 101, 74, 0.08);
+  border-bottom: 1px solid rgba(var(--v-theme-primary), 0.08);
 }
 .v-theme--dark .feedback-toolbar {
-  border-bottom-color: rgba(197, 138, 110, 0.10);
+  border-bottom-color: rgba(var(--v-theme-primary), 0.10);
 }
 
 .empty-state {
