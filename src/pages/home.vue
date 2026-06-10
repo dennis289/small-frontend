@@ -404,6 +404,14 @@
 </script>
 
 <style scoped>
+/* Home page uses the readable Inter sans everywhere — override the global
+   display serif (.font-serif) on the hero greeting and stat numbers. */
+.home-hero .font-serif,
+.stat-number.font-serif {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  letter-spacing: -0.01em;
+}
+
 /* ── Hero ──────────────────────────────────────────────────────────────────── */
 .home-hero {
   padding: 8px 0 0;
@@ -506,10 +514,10 @@
 
 /* ── Top streaks preview ──────────────────────────────────────────────────── */
 .streak-row + .streak-row {
-  border-top: 1px solid rgba(160, 101, 74, 0.07);
+  border-top: 1px solid rgba(var(--v-theme-primary), 0.07);
 }
 .v-theme--dark .streak-row + .streak-row {
-  border-top-color: rgba(197, 138, 110, 0.08);
+  border-top-color: rgba(var(--v-theme-primary), 0.08);
 }
 .streak-rank {
   color: rgb(var(--v-theme-on-surface-variant));

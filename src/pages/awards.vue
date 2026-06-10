@@ -492,10 +492,10 @@
 .recipient-avatar {
   background: rgb(var(--v-theme-surface-variant)) !important;
   color: rgb(var(--v-theme-on-surface));
-  border: 1px solid rgba(160, 101, 74, 0.16);
+  border: 1px solid rgba(var(--v-theme-primary), 0.16);
 }
 .v-theme--dark .recipient-avatar {
-  border-color: rgba(197, 138, 110, 0.20);
+  border-color: rgba(var(--v-theme-primary), 0.20);
 }
 
 .streak-flame {
@@ -507,19 +507,19 @@
 }
 
 .give-header {
-  background: linear-gradient(135deg, rgba(160, 101, 74, 0.06), rgba(160, 101, 74, 0.02));
-  border-bottom: 1px solid rgba(160, 101, 74, 0.10);
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.06), rgba(var(--v-theme-primary), 0.02));
+  border-bottom: 1px solid rgba(var(--v-theme-primary), 0.10);
 }
 .v-theme--dark .give-header {
-  background: linear-gradient(135deg, rgba(197, 138, 110, 0.10), rgba(197, 138, 110, 0.03));
-  border-bottom-color: rgba(197, 138, 110, 0.12);
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.10), rgba(var(--v-theme-primary), 0.03));
+  border-bottom-color: rgba(var(--v-theme-primary), 0.12);
 }
 .give-avatar {
   background: rgb(var(--v-theme-surface-variant)) !important;
   color: rgb(var(--v-theme-primary));
-  border: 1px solid rgba(160, 101, 74, 0.20);
+  border: 1px solid rgba(var(--v-theme-primary), 0.20);
 }
 .v-theme--dark .give-avatar {
-  border-color: rgba(197, 138, 110, 0.22);
+  border-color: rgba(var(--v-theme-primary), 0.22);
 }
 </style>

@@ -4,35 +4,35 @@ import { VTimePicker } from 'vuetify/labs/VTimePicker'
 import '@mdi/font/css/materialdesignicons.css'
 import 'vuetify/styles'
 
-// ─── Light: "Linen" ──────────────────────────────────────────────────────────
-// Warm off-white base with muted clay primary and soft stone secondary.
-// Editorial, calm, human — like quality stationery.
+// ─── Light: "Atlas" ──────────────────────────────────────────────────────────
+// Clean white base with a confident blue primary and red used sparingly for
+// small accents and alerts. Crisp, modern, high-contrast.
 const lightTheme = {
   dark: false,
   colors: {
-    'background': '#FAF8F5',
+    'background': '#FFFFFF',
     'surface': '#FFFFFF',
-    'surface-variant': '#F0EDE6',
+    'surface-variant': '#EEF2F6',
     'surface-bright': '#FFFFFF',
-    'surface-container': '#F5F2EC',
-    'primary': '#A0654A',
-    'primary-darken-1': '#8A5640',
-    'primary-lighten-1': '#B57860',
-    'secondary': '#78716C',
-    'secondary-darken-1': '#57534E',
-    'secondary-lighten-1': '#A8A29E',
-    'tertiary': '#B5926B',
-    'error': '#B85450',
-    'warning': '#C08552',
-    'info': '#6B8295',
-    'success': '#6B8E3D',
-    'on-background': '#292524',
-    'on-surface': '#292524',
-    'on-surface-variant': '#57534E',
+    'surface-container': '#F4F7FA',
+    'primary': '#1565C0',
+    'primary-darken-1': '#0D47A1',
+    'primary-lighten-1': '#42A5F5',
+    'secondary': '#64748B',
+    'secondary-darken-1': '#475569',
+    'secondary-lighten-1': '#94A3B8',
+    'tertiary': '#5C9CE6',
+    'error': '#D32F2F',
+    'warning': '#ED9C28',
+    'info': '#1976D2',
+    'success': '#2E7D32',
+    'on-background': '#1A1A1A',
+    'on-surface': '#1A1A1A',
+    'on-surface-variant': '#475569',
     'on-primary': '#FFFFFF',
     'on-secondary': '#FFFFFF',
-    'outline': '#D6D3D1',
-    'outline-variant': '#E7E5E4',
+    'outline': '#CBD5E1',
+    'outline-variant': '#E2E8F0',
   },
 }
 
