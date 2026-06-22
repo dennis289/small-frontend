@@ -77,14 +77,9 @@
                 </v-btn>
               </v-form>
               <div class="text-center mt-6">
-                <span class="text-body-2 text-medium-emphasis">Don't have an account?</span>
-                <v-btn
-                  class="ml-1"
-                  color="primary"
-                  size="small"
-                  to="/signup"
-                  variant="text"
-                >Sign up</v-btn>
+                <span class="text-body-2 text-medium-emphasis">
+                  Need an account? Contact your administrator.
+                </span>
               </div>
             </v-card>
           </v-col>
@@ -123,12 +118,15 @@
         localStorage.setItem('user', JSON.stringify({
           username: response.data.username,
           email: response.data.email,
+          client: response.data.client || null,
+          is_platform_admin: !!response.data.is_platform_admin,
         }))
         api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
       }
       email.value = ''
       password.value = ''
-      router.push('/home')
+      // Platform admins land on the clients console; everyone else on home.
+      router.push(response.data.is_platform_admin ? '/admin/clients' : '/home')
       toast.success('Welcome back!')
     } catch {
       toast.error('Invalid credentials. Please try again.')

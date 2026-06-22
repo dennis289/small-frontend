@@ -140,7 +140,13 @@
   const settingsDialog = ref(false)
   const saving = ref(false)
 
-  const navItems = [
+  const storedUser = JSON.parse(localStorage.getItem('user') || 'null') || {}
+
+  const isPlatformAdmin = computed(() =>
+    userData.value.is_platform_admin ?? storedUser.is_platform_admin ?? false,
+  )
+
+  const tenantNav = [
     { path: '/home', icon: 'mdi-home-outline', label: 'Home' },
     { path: '/people', icon: 'mdi-account-group-outline', label: 'People' },
     { path: '/roles', icon: 'mdi-briefcase-outline', label: 'Roles' },
@@ -149,6 +155,13 @@
     { path: '/feedback', icon: 'mdi-clipboard-check-outline', label: 'Feedback' },
     { path: '/streaks', icon: 'mdi-fire', label: 'Streaks' },
   ]
+
+  // Platform admins manage tenants, not roster data — give them the clients console.
+  const navItems = computed(() =>
+    isPlatformAdmin.value
+      ? [{ path: '/admin/clients', icon: 'mdi-domain', label: 'Clients' }]
+      : tenantNav,
+  )
 
   const form = ref({
     first_name: '',

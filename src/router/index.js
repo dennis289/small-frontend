@@ -22,11 +22,6 @@ const routes = [
     component: () => import('@/pages/login.vue'),
   },
   {
-    path: '/signup',
-    name: 'Signup',
-    component: () => import('@/pages/signup.vue'),
-  },
-  {
     path: '/home',
     name: 'Home',
     component: () => import('@/pages/home.vue'),
@@ -72,6 +67,12 @@ const routes = [
     component: () => import('@/pages/feedback-share.vue'),
     meta: { public: true },
   },
+  {
+    path: '/admin/clients',
+    name: 'AdminClients',
+    component: () => import('@/pages/admin-clients.vue'),
+    meta: { platformAdmin: true },
+  },
 ]
 
 const router = createRouter({
@@ -83,19 +84,18 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('auth_token')
   const isAuthenticated = !!token
+  const user = JSON.parse(localStorage.getItem('user') || 'null')
+  const isPlatformAdmin = !!user?.is_platform_admin
+  // Where an authenticated user "belongs" by default.
+  const homeFor = isPlatformAdmin ? '/admin/clients' : '/home'
 
   // pages that don't require authentication (static paths + any route with meta.public)
-  const publicPages = ['/login', '/signup']
+  const publicPages = ['/login']
   const isPublicPage = publicPages.includes(to.path) || to.matched.some(r => r.meta?.public)
 
   // redirect to login if not authenticated and trying to access a restricted page
   if (to.path === '/') {
-    if (isAuthenticated) {
-      next('/home')
-    } else {
-      next('/login')
-    }
-    return
+    return next(isAuthenticated ? homeFor : '/login')
   }
 
   // if not authenticated and trying to access protected page
@@ -103,10 +103,15 @@ router.beforeEach((to, from, next) => {
     return next('/login')
   }
 
-  // if authenticated and on login/signup, send them home — but leave shareable public
-  // routes (meta.public) alone so admins can preview share links while logged in.
+  // platform-admin-only routes (the clients console)
+  if (to.meta?.platformAdmin && !isPlatformAdmin) {
+    return next(homeFor)
+  }
+
+  // if authenticated and on login/signup, send them to their home — but leave shareable
+  // public routes (meta.public) alone so admins can preview share links while logged in.
   if (isAuthenticated && publicPages.includes(to.path)) {
-    return next('/home')
+    return next(homeFor)
   }
 
   next()
