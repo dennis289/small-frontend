@@ -1,47 +1,22 @@
 <template>
   <v-container class="pa-6 pa-md-8" fluid>
 
-    <!-- Hero -->
-    <section class="awards-hero mb-8">
-      <div class="d-flex align-center gap-2 mb-3">
-        <span class="eyebrow-rule" />
-        <span class="text-caption text-uppercase font-weight-medium text-medium-emphasis" style="letter-spacing:.25em;">
-          Recognition
-        </span>
-      </div>
-      <div class="d-flex align-end justify-space-between flex-wrap gap-4">
-        <div>
-          <h1 class="hero-title font-serif">
-            Member<span class="hero-italic">awards</span>
-          </h1>
-          <p class="hero-sub text-medium-emphasis mt-2">
-            A full record of recognition given. Each award ends a streak — and starts the next.
-          </p>
-        </div>
+    <PageHeader
+      eyebrow="Setup"
+      subtitle="A full record of recognition given. Each award ends a streak — and starts the next."
+      title="Awards"
+    >
+      <template #actions>
         <v-btn
           color="primary"
           prepend-icon="mdi-trophy-outline"
-          rounded="lg"
           variant="flat"
           @click="openGiveDialog()"
         >Give award</v-btn>
-      </div>
-    </section>
+      </template>
+    </PageHeader>
 
-    <!-- Summary strip -->
-    <section class="mb-8">
-      <v-row dense>
-        <v-col v-for="m in summaryCards" :key="m.label" cols="6" md="3">
-          <v-card class="metric-card pa-5" rounded="lg" variant="outlined">
-            <div class="text-caption text-uppercase text-medium-emphasis mb-2" style="letter-spacing:.18em;">
-              {{ m.label }}
-            </div>
-            <div class="metric-value font-serif">{{ m.value }}</div>
-            <div v-if="m.sub" class="text-caption text-medium-emphasis mt-2">{{ m.sub }}</div>
-          </v-card>
-        </v-col>
-      </v-row>
-    </section>
+    <StatTiles :tiles="statTiles" />
 
     <!-- Filters -->
     <v-card class="filter-bar pa-4 mb-6" rounded="lg" variant="outlined">
@@ -98,14 +73,17 @@
       </v-row>
     </v-card>
 
-    <!-- Awards table -->
-    <div class="section-label d-flex align-center gap-3 mb-4">
-      <span class="text-overline font-weight-bold" style="letter-spacing:.2em;">Award history</span>
-      <v-divider class="flex-grow-1" />
-      <span class="text-caption text-medium-emphasis">{{ totalAwards }} {{ totalAwards === 1 ? 'award' : 'awards' }}</span>
-    </div>
-
+    <!-- Awards table. The heading and count live in the card's toolbar band, the
+         same place every other list page puts them. -->
     <v-card class="overflow-hidden" rounded="lg" variant="outlined">
+      <div class="table-toolbar pa-4">
+        <span class="table-title">Award history</span>
+        <v-spacer />
+        <span class="text-caption text-medium-emphasis text-no-wrap">
+          {{ totalAwards }} {{ totalAwards === 1 ? 'award' : 'awards' }}
+        </span>
+      </div>
+
       <v-data-table
         density="comfortable"
         :headers="headers"
@@ -118,7 +96,7 @@
           <span class="font-serif">{{ formatDate(item.given_at) }}</span>
         </template>
         <template #item.person_name="{ item }">
-          <div class="d-flex align-center gap-3">
+          <div class="d-flex align-center ga-3">
             <v-avatar class="recipient-avatar" size="32">
               <span class="text-caption font-weight-bold">{{ initials(item.person_name) }}</span>
             </v-avatar>
@@ -129,7 +107,7 @@
           <v-chip color="primary" size="small" variant="tonal">{{ item.award_type_name }}</v-chip>
         </template>
         <template #item.streak_at_award="{ item }">
-          <div class="d-flex align-center gap-1">
+          <div class="d-flex align-center ga-1">
             <v-icon :class="['streak-flame', { dim: !item.streak_at_award }]" size="14">mdi-fire</v-icon>
             <span class="font-serif">{{ item.streak_at_award || 0 }}</span>
           </div>
@@ -158,7 +136,7 @@
     <v-dialog v-model="giveDialog" width="520">
       <v-card class="overflow-hidden" rounded="lg">
         <div class="give-header pa-5 d-flex align-center justify-space-between">
-          <div class="d-flex align-center gap-3">
+          <div class="d-flex align-center ga-3">
             <v-avatar class="give-avatar" size="42">
               <v-icon size="22">mdi-trophy-outline</v-icon>
             </v-avatar>
@@ -173,56 +151,61 @@
         </div>
 
         <v-card-text class="pa-6">
-          <v-autocomplete
-            v-model="form.person"
-            class="mb-3"
-            density="comfortable"
-            item-title="nameWithStreak"
-            item-value="id"
-            :items="personItems"
-            label="Recipient *"
-            prepend-inner-icon="mdi-account-outline"
-          />
+          <v-form ref="awardForm" @submit.prevent="submitAward">
+            <v-autocomplete
+              v-model="form.person"
+              class="mb-3"
+              density="comfortable"
+              item-title="nameWithStreak"
+              item-value="id"
+              :items="personItems"
+              label="Recipient*"
+              prepend-inner-icon="mdi-account-outline"
+              :rules="[rules.chooseOne('who this award is for')]"
+            />
 
-          <v-alert
-            v-if="selectedPersonStreak > 0"
-            class="mb-4"
-            density="compact"
-            type="info"
-            variant="tonal"
-          >
-            Giving this award will reset
-            <strong>{{ selectedPersonName }}</strong>'s streak from
-            <strong>{{ selectedPersonStreak }}</strong> back to zero.
-          </v-alert>
+            <v-alert
+              v-if="selectedPersonStreak > 0"
+              class="mb-4"
+              density="compact"
+              type="info"
+              variant="tonal"
+            >
+              Giving this award will reset
+              <strong>{{ selectedPersonName }}</strong>'s streak from
+              <strong>{{ selectedPersonStreak }}</strong> back to zero.
+            </v-alert>
 
-          <v-select
-            v-model="form.award_type"
-            class="mb-3"
-            density="comfortable"
-            item-title="name"
-            item-value="id"
-            :items="awardTypes"
-            label="Award type *"
-            prepend-inner-icon="mdi-medal-outline"
-          />
+            <v-select
+              v-model="form.award_type"
+              class="mb-3"
+              density="comfortable"
+              item-title="name"
+              item-value="id"
+              :items="awardTypes"
+              label="Award type*"
+              prepend-inner-icon="mdi-medal-outline"
+              :rules="[rules.chooseOne('an award type')]"
+            />
 
-          <v-text-field
-            v-model="form.given_at"
-            class="mb-3"
-            density="comfortable"
-            label="Date"
-            prepend-inner-icon="mdi-calendar-outline"
-            type="date"
-          />
+            <v-text-field
+              v-model="form.given_at"
+              class="mb-3"
+              density="comfortable"
+              label="Date"
+              prepend-inner-icon="mdi-calendar-outline"
+              type="date"
+            />
 
-          <v-textarea
-            v-model="form.feedback"
-            density="comfortable"
-            hide-details
-            label="Notes"
-            rows="3"
-          />
+            <v-textarea
+              v-model="form.feedback"
+              density="comfortable"
+              hide-details
+              label="Notes"
+              rows="3"
+            />
+            <small class="text-caption text-medium-emphasis">Fields marked * are required</small>
+          </v-form>
         </v-card-text>
 
         <v-divider />
@@ -230,7 +213,6 @@
           <v-btn variant="text" @click="giveDialog = false">Cancel</v-btn>
           <v-btn
             color="primary"
-            :disabled="!form.person || !form.award_type"
             :loading="giving"
             prepend-icon="mdi-trophy-outline"
             variant="flat"
@@ -259,11 +241,22 @@
 </template>
 
 <script setup>
-  import { computed, onMounted, ref, watch } from 'vue'
+  /**
+   * Awards page — grant recognition and review award history.
+   *
+   * Two resources share this screen: award *types* (the client's catalogue) and the
+   * awards themselves. Granting one snapshots the recipient's current streak onto the
+   * award and resets it, so the record shows what the award was earned for.
+   *
+   * A type that has already been granted can't be deleted (PROTECT) — deactivate it.
+   */
+  import { computed, nextTick, onMounted, ref, watch } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import { toast } from 'vue-sonner'
   import { useAwardsStore } from '@/stores/awards'
   import { usePeopleStore } from '@/stores/people'
+  import * as rules from '@/validation'
+  import { validateForm } from '@/validation'
 
   const route = useRoute()
   const router = useRouter()
@@ -280,6 +273,7 @@
   const filters = ref({ person: null, type: null, from: null, to: null })
 
   const giveDialog = ref(false)
+  const awardForm = ref(null)
   const giving = ref(false)
   const form = ref({ person: null, award_type: null, given_at: todayStr(), feedback: '' })
 
@@ -298,13 +292,13 @@
     { title: '', key: 'actions', sortable: false, align: 'end', width: '56px' },
   ]
 
-  const summaryCards = computed(() => {
+  const statTiles = computed(() => {
     const s = stats.value
     return [
-      { label: 'Total awards', value: s?.total ?? 0, sub: 'all-time' },
-      { label: 'This month', value: s?.this_month ?? 0, sub: 'awards given' },
-      { label: 'Recipients', value: s?.unique_recipients ?? 0, sub: 'unique members' },
-      { label: 'Award types', value: s?.unique_types ?? 0, sub: 'in use' },
+      { label: 'Total awards', value: s?.total ?? 0, icon: 'mdi-trophy-outline' },
+      { label: 'This month', value: s?.this_month ?? 0, icon: 'mdi-calendar-month-outline' },
+      { label: 'Recipients', value: s?.unique_recipients ?? 0, icon: 'mdi-account-group-outline' },
+      { label: 'Award types', value: s?.unique_types ?? 0, icon: 'mdi-shape-outline' },
     ]
   })
 
@@ -394,9 +388,13 @@
       feedback: '',
     }
     giveDialog.value = true
+    nextTick(() => awardForm.value?.resetValidation())
   }
 
   async function submitAward () {
+    if (!await validateForm(awardForm)) {
+      return
+    }
     giving.value = true
     const result = await awardsStore.giveAward({
       person: form.value.person,
@@ -445,45 +443,6 @@
 </script>
 
 <style scoped>
-.awards-hero .eyebrow-rule {
-  display: inline-block;
-  width: 28px;
-  height: 1px;
-  background: currentColor;
-  opacity: .5;
-}
-.hero-title {
-  font-size: clamp(1.9rem, 3.8vw, 2.8rem);
-  line-height: 1.05;
-  font-weight: 500;
-  margin: 0;
-}
-.hero-italic {
-  font-style: italic;
-  font-weight: 500;
-  font-size: 1em;
-  margin-inline-start: .12em;
-  color: rgb(var(--v-theme-primary-darken-1));
-}
-.v-theme--dark .hero-italic {
-  color: rgb(var(--v-theme-primary-lighten-1));
-}
-.hero-sub {
-  font-size: 1rem;
-  max-width: 60ch;
-}
-
-.metric-card {
-  background: rgb(var(--v-theme-surface)) !important;
-  height: 100%;
-}
-.metric-value {
-  font-size: clamp(1.9rem, 3vw, 2.4rem);
-  line-height: 1;
-  font-weight: 500;
-  letter-spacing: -.02em;
-  color: rgb(var(--v-theme-on-surface));
-}
 
 .filter-bar {
   background: rgb(var(--v-theme-surface)) !important;

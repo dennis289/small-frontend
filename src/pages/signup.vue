@@ -7,7 +7,7 @@
           <!-- Left branding panel -->
           <v-col class="d-none d-md-flex auth-brand-panel" cols="12" md="5">
             <div class="brand-content">
-              <div class="d-flex align-center gap-2 mb-4 brand-eyebrow">
+              <div class="d-flex align-center ga-2 mb-4 brand-eyebrow">
                 <span class="eyebrow-rule" />
                 <span class="text-caption text-uppercase font-weight-medium" style="letter-spacing:.3em; opacity:.7;">
                   Team roster
@@ -22,7 +22,7 @@
               </p>
 
               <div class="brand-footer">
-                <div class="d-flex align-center gap-3">
+                <div class="d-flex align-center ga-3">
                   <span class="footer-dot" />
                   <span class="text-caption" style="letter-spacing:.15em;">FREE TO START</span>
                 </div>
@@ -34,7 +34,7 @@
           <v-col class="d-flex align-center justify-center auth-form-panel" cols="12" md="7">
             <v-card class="pa-8 ma-4 auth-card" flat max-width="480" width="100%">
               <div class="mb-7">
-                <div class="d-flex align-center gap-2 mb-3 auth-eyebrow">
+                <div class="d-flex align-center ga-2 mb-3 auth-eyebrow">
                   <span class="eyebrow-rule" />
                   <span class="text-caption text-uppercase font-weight-medium text-medium-emphasis" style="letter-spacing:.25em;">
                     Sign up
@@ -45,14 +45,14 @@
                 </h2>
                 <p class="text-body-2 text-medium-emphasis mt-2">It only takes a minute.</p>
               </div>
-              <v-form v-model="form" @submit.prevent="onSubmit">
+              <v-form ref="form" @submit.prevent="onSubmit">
                 <v-text-field
                   v-model="fullname"
                   class="mb-3"
                   label="Full name"
                   prepend-inner-icon="mdi-account-outline"
                   :readonly="loading"
-                  :rules="[required]"
+                  :rules="[rules.required('your full name')]"
                 />
                 <v-text-field
                   v-model="email"
@@ -60,7 +60,7 @@
                   label="Email"
                   prepend-inner-icon="mdi-email-outline"
                   :readonly="loading"
-                  :rules="[required]"
+                  :rules="[rules.required('your email address'), rules.email()]"
                 />
                 <v-text-field
                   v-model="password"
@@ -68,7 +68,7 @@
                   class="mb-3"
                   label="Password"
                   prepend-inner-icon="mdi-lock-outline"
-                  :rules="[required, matchPassword]"
+                  :rules="[rules.required('a password'), rules.minLength(8, 'Your password')]"
                   :type="showPassword ? 'text' : 'password'"
                   @click:append-inner="showPassword = !showPassword"
                 />
@@ -78,14 +78,16 @@
                   class="mb-6"
                   label="Confirm password"
                   prepend-inner-icon="mdi-lock-check-outline"
-                  :rules="[required, matchPassword]"
+                  :rules="[
+                    rules.required('your password again'),
+                    rules.matches(() => password, 'This does not match the password above'),
+                  ]"
                   :type="showConfirmPassword ? 'text' : 'password'"
                   @click:append-inner="showConfirmPassword = !showConfirmPassword"
                 />
                 <v-btn
                   block
                   color="primary"
-                  :disabled="!form"
                   :loading="loading"
                   size="large"
                   type="submit"
@@ -111,9 +113,22 @@
 </template>
 
 <script setup>
-  import api from '../api'
+  /**
+   * Signup page — currently unreachable.
+   *
+   * Public self-service registration was disabled when the app became multi-tenant:
+   * `POST /api/signup/` always answers 403, and there is no route pointing here.
+   * Accounts are provisioned by a platform admin via the clients console.
+   *
+   * Kept deliberately: per-tenant invites are planned, where a client admin invites
+   * a colleague and this becomes the accept-invite form (bound to an invite token
+   * rather than open registration).
+   */
   import { ref } from 'vue'
   import { useRouter } from 'vue-router'
+  import * as rules from '@/validation'
+  import { validateForm } from '@/validation'
+  import api from '../api'
 
   const router = useRouter()
   const form = ref(null)
@@ -125,12 +140,10 @@
   const email = ref('')
   const confirmPassword = ref('')
 
-  const matchPassword = value => {
-    return value === password.value || 'Passwords do not match'
-  }
-
   async function onSubmit () {
-    if (!form.value) return
+    if (!await validateForm(form)) {
+      return
+    }
     loading.value = true
     try {
       const response = await api.post('/api/signup/', {
@@ -154,21 +167,23 @@
       loading.value = false
     }
   }
-
-  function required (value) {
-    return !!value || 'Field is required'
-  }
 </script>
 
 <style scoped>
 /* ── Brand panel ─────────────────────────────────────────────────────────── */
+/* Theme-independent by design — see the note on the same panel in login.vue.
+   Built from `--v-theme-primary` this went white-on-white in the dark theme. */
 .auth-brand-panel {
+  --brand-deep: #131316;
+  --brand-mid: #26262B;
+  --brand-warm: #B5926B;
+
   position: relative;
   overflow: hidden;
   background:
     radial-gradient(ellipse 60% 50% at 80% 10%, rgba(255, 255, 255, 0.06), transparent 60%),
     radial-gradient(ellipse 50% 40% at 10% 90%, rgba(0, 0, 0, 0.18), transparent 60%),
-    linear-gradient(135deg, rgb(var(--v-theme-primary-darken-1)) 0%, rgb(var(--v-theme-primary)) 50%, #B5926B 100%);
+    linear-gradient(135deg, var(--brand-deep) 0%, var(--brand-mid) 50%, var(--brand-warm) 100%);
   color: #FFFFFF;
 }
 .auth-brand-panel::before {

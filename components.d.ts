@@ -13,6 +13,7 @@ declare module 'vue' {
     PageHeader: typeof import('./src/components/PageHeader.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    StatTiles: typeof import('./src/components/StatTiles.vue')['default']
     TablesCard: typeof import('./src/components/tablesCard.vue')['default']
   }
 }

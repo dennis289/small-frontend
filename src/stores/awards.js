@@ -1,5 +1,12 @@
+/**
+ * Awards store — recognition records and the award-type catalogue.
+ *
+ * `giveAward` has a side effect on the backend: granting an award snapshots the
+ * recipient's attendance streak onto the award and resets it to zero.
+ */
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { readApiError } from '@/validation'
 import api from '../api'
 
 export const useAwardsStore = defineStore('awards', () => {
@@ -30,7 +37,7 @@ export const useAwardsStore = defineStore('awards', () => {
       totalAwards.value = res.data.count ?? awards.value.length
       return { success: true, data: awards.value }
     } catch (error) {
-      return { success: false, error: error.response?.data?.error || 'Failed to fetch awards' }
+      return { success: false, error: readApiError(error, 'Failed to fetch awards') }
     } finally {
       loading.value = false
     }
@@ -42,7 +49,7 @@ export const useAwardsStore = defineStore('awards', () => {
       stats.value = res.data
       return { success: true, data: res.data }
     } catch (error) {
-      return { success: false, error: error.response?.data?.error || 'Failed to fetch stats' }
+      return { success: false, error: readApiError(error, 'Failed to fetch stats') }
     }
   }
 
@@ -52,7 +59,7 @@ export const useAwardsStore = defineStore('awards', () => {
       awardTypes.value = res.data
       return { success: true, data: res.data }
     } catch (error) {
-      return { success: false, error: error.response?.data?.error || 'Failed to fetch award types' }
+      return { success: false, error: readApiError(error, 'Failed to fetch award types') }
     }
   }
 
@@ -61,7 +68,7 @@ export const useAwardsStore = defineStore('awards', () => {
       const res = await api.get(`/api/persons/${personId}/awards/`)
       return { success: true, data: res.data }
     } catch (error) {
-      return { success: false, error: error.response?.data?.error || 'Failed to fetch person awards' }
+      return { success: false, error: readApiError(error, 'Failed to fetch person awards') }
     }
   }
 
@@ -88,7 +95,7 @@ export const useAwardsStore = defineStore('awards', () => {
       await api.delete(`/api/awards/${id}/`)
       return { success: true }
     } catch (error) {
-      return { success: false, error: error.response?.data?.error || 'Failed to delete award' }
+      return { success: false, error: readApiError(error, 'Failed to delete award') }
     }
   }
 

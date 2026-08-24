@@ -1,10 +1,20 @@
+/**
+ * Team-member store.
+ *
+ * Two different list endpoints on purpose: `fetchPersons` is the paginated, searchable
+ * table view (and populates `persons`/`totalPersons`), while `fetchActivePersons`
+ * returns every active member unpaginated for the roster editor's pickers and returns
+ * the data directly rather than caching it.
+ */
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { readApiError } from '@/validation'
 import api from '../api'
 
 export const usePeopleStore = defineStore('people', () => {
   const persons = ref([])
   const totalPersons = ref(0)
+  const personCounts = ref(null)
   const loading = ref(false)
 
   async function fetchPersons ({ page = 1, pageSize = 10, search = '' } = {}) {
@@ -17,9 +27,12 @@ export const usePeopleStore = defineStore('people', () => {
       const res = await api.get('/api/persons/', { params })
       persons.value = res.data.results || res.data
       totalPersons.value = res.data.count || res.data.total || Math.max(persons.value.length, 0)
+      // Whole-directory tallies for the summary tiles, computed server-side over
+      // the filtered set — the current page can't produce these honestly.
+      personCounts.value = res.data.counts || null
       return { success: true }
     } catch (error) {
-      return { success: false, error: error.response?.data?.error || 'Failed to fetch persons' }
+      return { success: false, error: readApiError(error, 'Failed to fetch persons') }
     } finally {
       loading.value = false
     }
@@ -30,7 +43,7 @@ export const usePeopleStore = defineStore('people', () => {
       const res = await api.get('/api/persons/active/')
       return { success: true, data: res.data }
     } catch (error) {
-      return { success: false, error: error.response?.data?.error || 'Failed to fetch active persons' }
+      return { success: false, error: readApiError(error, 'Failed to fetch active persons') }
     }
   }
 
@@ -39,7 +52,7 @@ export const usePeopleStore = defineStore('people', () => {
       const res = await api.post('/api/persons/', data)
       return { success: true, data: res.data }
     } catch (error) {
-      return { success: false, error: error.response?.data?.error || 'Failed to create person' }
+      return { success: false, error: readApiError(error, 'Failed to create person') }
     }
   }
 
@@ -48,7 +61,7 @@ export const usePeopleStore = defineStore('people', () => {
       const res = await api.put(`/api/persons/modify/${id}/`, { ...data, id })
       return { success: true, data: res.data }
     } catch (error) {
-      return { success: false, error: error.response?.data?.error || 'Failed to update person' }
+      return { success: false, error: readApiError(error, 'Failed to update person') }
     }
   }
 
@@ -57,7 +70,7 @@ export const usePeopleStore = defineStore('people', () => {
       await api.delete(`/api/persons/modify/${id}/`)
       return { success: true }
     } catch (error) {
-      return { success: false, error: error.response?.data?.error || 'Failed to delete person' }
+      return { success: false, error: readApiError(error, 'Failed to delete person') }
     }
   }
 
@@ -66,7 +79,7 @@ export const usePeopleStore = defineStore('people', () => {
       const res = await api.post('/api/persons/bulk-upload/', { data })
       return { success: true, data: res.data }
     } catch (error) {
-      return { success: false, error: error.response?.data?.error || 'Failed to bulk upload' }
+      return { success: false, error: readApiError(error, 'Failed to bulk upload') }
     }
   }
 
@@ -75,9 +88,9 @@ export const usePeopleStore = defineStore('people', () => {
       const res = await api.get('/api/persons/streaks/')
       return { success: true, data: res.data }
     } catch (error) {
-      return { success: false, error: error.response?.data?.error || 'Failed to fetch streaks' }
+      return { success: false, error: readApiError(error, 'Failed to fetch streaks') }
     }
   }
 
-  return { persons, totalPersons, loading, fetchPersons, fetchActivePersons, createPerson, updatePerson, deletePerson, bulkUpload, fetchStreaks }
+  return { persons, totalPersons, personCounts, loading, fetchPersons, fetchActivePersons, createPerson, updatePerson, deletePerson, bulkUpload, fetchStreaks }
 })

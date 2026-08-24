@@ -3,19 +3,19 @@
 
     <!-- ─── Editorial header ─────────────────────────────────────────────── -->
     <section class="streaks-hero mb-8">
-      <div class="d-flex align-center gap-2 mb-3">
+      <div class="d-flex align-center ga-2 mb-3">
         <span class="eyebrow-rule" />
         <span class="text-caption text-uppercase font-weight-medium text-medium-emphasis" style="letter-spacing:.25em;">
           Recognition
         </span>
       </div>
-      <div class="d-flex align-end justify-space-between flex-wrap gap-4">
+      <div class="d-flex align-end justify-space-between flex-wrap ga-4">
         <div>
           <h1 class="hero-title font-serif">
             Attendance<span class="hero-italic">streaks</span>
           </h1>
           <p class="hero-sub text-medium-emphasis mt-2">
-            Consecutive service appearances. Give an award to celebrate — and reset — a streak.
+            Consecutive event appearances. Give an award to celebrate — and reset — a streak.
           </p>
         </div>
         <v-btn
@@ -47,7 +47,7 @@
 
     <!-- ─── Podium ───────────────────────────────────────────────────────── -->
     <section v-if="top3.length > 0" class="mb-10">
-      <div class="section-label d-flex align-center gap-3 mb-6">
+      <div class="section-label d-flex align-center ga-3 mb-6">
         <span class="text-overline font-weight-bold" style="letter-spacing:.2em;">Leaders</span>
         <v-divider class="flex-grow-1" />
       </div>
@@ -115,7 +115,7 @@
 
     <!-- ─── Full leaderboard ─────────────────────────────────────────────── -->
     <section>
-      <div class="section-label d-flex align-center gap-3 mb-4">
+      <div class="section-label d-flex align-center ga-3 mb-4">
         <span class="text-overline font-weight-bold" style="letter-spacing:.2em;">Full leaderboard</span>
         <v-divider class="flex-grow-1" />
         <span class="text-caption text-medium-emphasis">{{ filteredStreaks.length }} of {{ streaks.length }}</span>
@@ -148,7 +148,7 @@
           </template>
 
           <template #item.name="{ item }">
-            <div class="d-flex align-center gap-3">
+            <div class="d-flex align-center ga-3">
               <v-avatar class="leader-avatar" size="34">
                 <span class="text-caption font-weight-bold">{{ initials(item.name) }}</span>
               </v-avatar>
@@ -157,7 +157,7 @@
           </template>
 
           <template #item.current_streak="{ item }">
-            <div class="d-flex align-center gap-2">
+            <div class="d-flex align-center ga-2">
               <v-icon
                 :class="['streak-flame', { dim: item.current_streak === 0 }]"
                 size="15"
@@ -197,6 +197,13 @@
 </template>
 
 <script setup>
+  /**
+   * Streaks page — consecutive-attendance leaderboard.
+   *
+   * Streaks are derived from submitted feedback, not from assignments: a member only
+   * advances when someone records them present. Granting an award resets that
+   * member's current streak to zero after banking it on the award.
+   */
   import { computed, onMounted, ref } from 'vue'
   import { useRouter } from 'vue-router'
   import { toast } from 'vue-sonner'

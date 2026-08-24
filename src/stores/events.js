@@ -1,5 +1,12 @@
+/**
+ * Events store — the recurring slots that get staffed.
+ *
+ * An event's bound `roles` are what the generator fills for it; an event with no
+ * roles produces no assignments.
+ */
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { readApiError } from '@/validation'
 import api from '../api'
 
 export const useEventsStore = defineStore('events', () => {
@@ -13,7 +20,7 @@ export const useEventsStore = defineStore('events', () => {
       events.value = res.data
       return { success: true }
     } catch (error) {
-      return { success: false, error: error.response?.data?.error || 'Failed to fetch events' }
+      return { success: false, error: readApiError(error, 'Failed to fetch events') }
     } finally {
       loading.value = false
     }
@@ -24,7 +31,7 @@ export const useEventsStore = defineStore('events', () => {
       const res = await api.post('/api/events/', data)
       return { success: true, data: res.data }
     } catch (error) {
-      return { success: false, error: error.response?.data?.error || 'Failed to create event' }
+      return { success: false, error: readApiError(error, 'Failed to create event') }
     }
   }
 
@@ -33,7 +40,7 @@ export const useEventsStore = defineStore('events', () => {
       const res = await api.put(`/api/events/modify/${id}/`, data)
       return { success: true, data: res.data }
     } catch (error) {
-      return { success: false, error: error.response?.data?.error || 'Failed to update event' }
+      return { success: false, error: readApiError(error, 'Failed to update event') }
     }
   }
 
@@ -42,7 +49,7 @@ export const useEventsStore = defineStore('events', () => {
       await api.delete(`/api/events/modify/${id}/`, { data: { id } })
       return { success: true }
     } catch (error) {
-      return { success: false, error: error.response?.data?.error || 'Failed to delete event' }
+      return { success: false, error: readApiError(error, 'Failed to delete event') }
     }
   }
 

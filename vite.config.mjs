@@ -18,7 +18,9 @@ export default defineConfig({
     }),
     // https://github.com/vuetifyjs/vuetify-loader/tree/master/packages/vite-plugin#readme
     Vuetify({
-      autoImport: true,
+      // `labs: true` also auto-imports lab components (VTimePicker, VDateInput, …).
+      // Without it they resolve to nothing and Vue warns "Failed to resolve component".
+      autoImport: { labs: true },
       styles: {
         configFile: 'src/styles/settings.scss',
       },
@@ -31,6 +33,13 @@ export default defineConfig({
             name: 'Roboto',
             weights: [100, 300, 400, 500, 700, 900],
             styles: ['normal', 'italic'],
+          },
+          // The UI font. custom-theme.css has always asked for Inter; until now it
+          // was never loaded, so everything silently fell back to system-ui.
+          {
+            name: 'Inter',
+            weights: [400, 500, 600, 700],
+            styles: ['normal'],
           },
         ],
       },

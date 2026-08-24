@@ -51,7 +51,7 @@
         rounded="lg"
         variant="outlined"
       >
-        <div class="event-header px-5 py-3 d-flex align-center gap-2">
+        <div class="event-header px-5 py-3 d-flex align-center ga-2">
           <v-icon color="primary" size="18">mdi-calendar-star-outline</v-icon>
           <span class="text-subtitle-1 font-serif font-weight-medium">{{ event.event_name }}</span>
           <v-spacer />
@@ -70,7 +70,7 @@
               <v-row align="center" no-gutters>
                 <!-- Role + assigned member -->
                 <v-col cols="12" sm="6">
-                  <div class="d-flex align-center gap-3">
+                  <div class="d-flex align-center ga-3">
                     <v-chip
                       color="secondary"
                       label
@@ -109,7 +109,7 @@
       </v-card>
 
       <!-- Global feedback -->
-      <div class="section-label d-flex align-center gap-3 mt-6 mb-3">
+      <div class="section-label d-flex align-center ga-3 mt-6 mb-3">
         <span class="text-overline font-weight-bold" style="letter-spacing:.2em;">Notes</span>
         <v-divider class="flex-grow-1" />
       </div>
@@ -117,17 +117,17 @@
       <v-textarea
         v-model="globalFeedback"
         auto-grow
-        label="Overall feedback for the service"
-        placeholder="Anything you'd like to share about how the service went..."
+        label="Overall feedback for the day"
+        placeholder="Anything you'd like to share about how the day went..."
         rows="4"
         variant="outlined"
       />
 
-       <v-textarea
+      <v-textarea
         v-model="globalReccommendations"
         auto-grow
-        label="Overall recommendations for the service"
-        placeholder="Anything you'd like to recommend about how the service could be improved..."
+        label="Overall recommendations for the day"
+        placeholder="Anything you'd like to recommend about how the day could be improved..."
         rows="4"
         variant="outlined"
       />
@@ -154,9 +154,21 @@
 </template>
 
 <script setup>
+  /**
+   * Public one-time feedback form, reached via /feedback/share/:token.
+   *
+   * The only route with `meta.public` — no login, no tenant context, the token in the
+   * URL is the entire authorisation. Anyone holding it can see who was rostered that
+   * day and submit once; the backend flips the link to used inside a transaction, so
+   * a second submit (or a shared link) gets a 410.
+   *
+   * Attendance is keyed by person_id rather than by assignment, so someone rostered
+   * to several events that day is marked present or absent once for the whole day.
+   */
   import { onMounted, ref } from 'vue'
   import { useRoute } from 'vue-router'
   import { toast } from 'vue-sonner'
+  import { readApiError } from '@/validation'
   import api from '../api'
 
   const route = useRoute()
@@ -201,7 +213,7 @@
         errorTitle.value = 'Already submitted'
         error.value = 'This feedback link has already been used. Ask the admin for a new one if you need to update.'
       } else {
-        error.value = error_.response?.data?.error || 'Could not load the form. Check your connection and try again.'
+        error.value = readApiError(error_, 'Could not load the form. Check your connection and try again.')
       }
     } finally {
       loading.value = false
@@ -228,7 +240,7 @@
         submitted.value = false
         payload.value = null
       } else {
-        toast.error(error_.response?.data?.error || 'Submission failed. Please try again.')
+        toast.error(readApiError(error_, 'Submission failed. Please try again.'))
       }
     } finally {
       submitting.value = false
