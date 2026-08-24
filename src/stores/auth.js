@@ -1,16 +1,36 @@
-import api from '@/api'
+/**
+ * Auth store.
+ *
+ * Session state lives in three localStorage keys shared with `main.js`, the router
+ * guard and `login.vue` — keep the names in sync if you touch them:
+ *   auth_token    JWT access token (15 min lifetime)
+ *   auth_refresh  JWT refresh token (7 days, rotated on every use)
+ *   user          cached profile; the router guard reads `is_platform_admin` off it
+ *                 to decide between the tenant app and the clients console
+ *
+ * Caveat: `login.vue` currently performs its own login and writes these keys directly,
+ * so this store's `login()` is not on the live path. `signup()` is dead too — the
+ * backend disabled public sign-up and always answers 403.
+ */
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
+import api from '@/api'
+import {
+  clearSession, getRefreshToken, getStoredUser, getToken, hasLiveSession,
+  setTokens, USER_KEY,
+} from '@/session'
+import { readApiError } from '@/validation'
 
 export const useAuthStore = defineStore('auth', () => {
   // State
-  const token = ref(localStorage.getItem('auth_token') || null)
-  const refreshToken = ref(localStorage.getItem('auth_refresh') || null)
-  const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
+  const token = ref(getToken())
+  const refreshToken = ref(getRefreshToken())
+  const user = ref(getStoredUser())
   const isLoading = ref(false)
 
-  // Getters
-  const isAuthenticated = computed(() => !!token.value)
+  // Getters — a live session needs an unexpired refresh token, not merely a
+  // stored access token.
+  const isAuthenticated = computed(() => !!token.value && hasLiveSession())
   const userInfo = computed(() => user.value)
 
   // Actions
@@ -19,10 +39,9 @@ export const useAuthStore = defineStore('auth', () => {
     refreshToken.value = authData.refresh
     user.value = authData.user
 
-    // Store in localStorage — use same keys as login.vue and router guard
-    localStorage.setItem('auth_token', authData.access)
-    localStorage.setItem('auth_refresh', authData.refresh)
-    localStorage.setItem('user', JSON.stringify(authData.user))
+    // Store in localStorage — same keys as login.vue and the router guard
+    setTokens(authData.access, authData.refresh)
+    localStorage.setItem(USER_KEY, JSON.stringify(authData.user ?? null))
 
     // Set default authorization header
     api.defaults.headers.common['Authorization'] = `Bearer ${authData.access}`
@@ -33,10 +52,7 @@ export const useAuthStore = defineStore('auth', () => {
     refreshToken.value = null
     user.value = null
 
-    // Clear localStorage
-    localStorage.removeItem('auth_token')
-    localStorage.removeItem('auth_refresh')
-    localStorage.removeItem('user')
+    clearSession()
 
     // Clear authorization header
     delete api.defaults.headers.common['Authorization']
@@ -61,7 +77,7 @@ export const useAuthStore = defineStore('auth', () => {
       console.error('Login error:', error)
       return {
         success: false,
-        error: error.response?.data?.error || 'Login failed. Please try again.',
+        error: readApiError(error, 'Login failed. Please try again.'),
       }
     } finally {
       isLoading.value = false
@@ -83,7 +99,7 @@ export const useAuthStore = defineStore('auth', () => {
       console.error('Signup error:', error)
       return {
         success: false,
-        error: error.response?.data?.error || error.response?.data?.username?.[0] || 'Signup failed. Please try again.',
+        error: readApiError(error, 'Could not create the account. Please try again.'),
       }
     } finally {
       isLoading.value = false
@@ -106,11 +122,11 @@ export const useAuthStore = defineStore('auth', () => {
 
       if (response.data.access) {
         token.value = response.data.access
-        localStorage.setItem('auth_token', response.data.access)
-        // Save the rotated refresh token — ROTATE_REFRESH_TOKENS=True blacklists the old one.
+        // Persists the rotated refresh token too — ROTATE_REFRESH_TOKENS=True
+        // blacklists the old one on use.
+        setTokens(response.data.access, response.data.refresh)
         if (response.data.refresh) {
           refreshToken.value = response.data.refresh
-          localStorage.setItem('auth_refresh', response.data.refresh)
         }
         api.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`
         return true

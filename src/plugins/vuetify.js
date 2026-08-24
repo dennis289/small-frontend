@@ -1,81 +1,85 @@
 import { createVuetify } from 'vuetify'
-import { VRating } from 'vuetify/components'
-import { VTimePicker } from 'vuetify/labs/VTimePicker'
 import '@mdi/font/css/materialdesignicons.css'
 import 'vuetify/styles'
 
-// ─── Light: "Atlas" ──────────────────────────────────────────────────────────
-// Clean white base with a confident blue primary and red used sparingly for
-// small accents and alerts. Crisp, modern, high-contrast.
+// ─── Light: "Slate" ──────────────────────────────────────────────────────────
+// Neutral, high-contrast SaaS palette. Near-white page, white cards, and a
+// near-black primary used for the one thing that matters on a screen: the active
+// nav item and the primary button. Colour is reserved for status, never chrome.
 const lightTheme = {
   dark: false,
   colors: {
     'background': '#FFFFFF',
     'surface': '#FFFFFF',
-    'surface-variant': '#EEF2F6',
+    // The tinted band behind table headers, sidebars and icon tiles.
+    'surface-variant': '#F5F5F4',
     'surface-bright': '#FFFFFF',
-    'surface-container': '#F4F7FA',
-    'primary': '#1565C0',
-    'primary-darken-1': '#0D47A1',
-    'primary-lighten-1': '#42A5F5',
-    'secondary': '#64748B',
-    'secondary-darken-1': '#475569',
-    'secondary-lighten-1': '#94A3B8',
-    'tertiary': '#5C9CE6',
-    'error': '#D32F2F',
-    'warning': '#ED9C28',
-    'info': '#1976D2',
-    'success': '#2E7D32',
-    'on-background': '#1A1A1A',
-    'on-surface': '#1A1A1A',
-    'on-surface-variant': '#475569',
+    'surface-container': '#FAFAF9',
+    // Near-black rather than a hue: the active pill and primary button read as
+    // weight, not decoration.
+    'primary': '#26262B',
+    'primary-darken-1': '#131316',
+    'primary-lighten-1': '#4A4A52',
+    'secondary': '#71717A',
+    'secondary-darken-1': '#52525B',
+    'secondary-lighten-1': '#A1A1AA',
+    // The one accent, used for counts on the active tab and links.
+    'tertiary': '#2563EB',
+    'error': '#DC2626',
+    'warning': '#D97706',
+    'info': '#2563EB',
+    'success': '#16A34A',
+    'on-background': '#18181B',
+    'on-surface': '#18181B',
+    'on-surface-variant': '#71717A',
     'on-primary': '#FFFFFF',
     'on-secondary': '#FFFFFF',
-    'outline': '#CBD5E1',
-    'outline-variant': '#E2E8F0',
+    'outline': '#E4E4E7',
+    'outline-variant': '#F4F4F5',
   },
 }
 
-// ─── Dark: "Hearth" ──────────────────────────────────────────────────────────
-// Deep warm-charcoal surfaces with clay primary and stone secondary.
-// Same warm, hand-crafted feel — but for late evenings.
+// ─── Dark: "Slate Night" ─────────────────────────────────────────────────────
+// A true counterpart to the light theme rather than a different design: same
+// neutral greys and same status hues, inverted. Primary becomes near-white so the
+// active pill keeps reading as weight against a dark page.
 const darkTheme = {
   dark: true,
   colors: {
-    'background': '#14110E',
-    'surface': '#1C1814',
-    'surface-variant': '#241F19',
-    'surface-bright': '#2A241D',
-    'surface-container': '#1F1B16',
-    'primary': '#C58A6E',
-    'primary-darken-1': '#A0654A',
-    'primary-lighten-1': '#D9A082',
-    'secondary': '#A8A29E',
-    'secondary-darken-1': '#78716C',
-    'secondary-lighten-1': '#D6D3D1',
-    'tertiary': '#D4B896',
-    'error': '#D9756F',
-    'warning': '#D9A176',
-    'info': '#94A8B8',
-    'success': '#9CB572',
-    'on-background': '#E7E5E4',
-    'on-surface': '#E7E5E4',
-    'on-surface-variant': '#A8A29E',
-    'on-primary': '#1C1814',
-    'on-secondary': '#1C1814',
-    'outline': '#3A332B',
-    'outline-variant': '#2A241D',
+    'background': '#0B0B0D',
+    'surface': '#141417',
+    'surface-variant': '#1D1D21',
+    'surface-bright': '#26262B',
+    'surface-container': '#171719',
+    'primary': '#F4F4F5',
+    'primary-darken-1': '#D4D4D8',
+    'primary-lighten-1': '#FFFFFF',
+    'secondary': '#A1A1AA',
+    'secondary-darken-1': '#71717A',
+    'secondary-lighten-1': '#D4D4D8',
+    'tertiary': '#60A5FA',
+    'error': '#F87171',
+    'warning': '#FBBF24',
+    'info': '#60A5FA',
+    'success': '#4ADE80',
+    'on-background': '#FAFAFA',
+    'on-surface': '#FAFAFA',
+    'on-surface-variant': '#A1A1AA',
+    'on-primary': '#18181B',
+    'on-secondary': '#18181B',
+    'outline': '#2A2A30',
+    'outline-variant': '#1D1D21',
   },
 }
 
 export default createVuetify({
   theme: {
-    defaultTheme: 'dark',
+    defaultTheme: 'light',
     themes: { light: lightTheme, dark: darkTheme },
   },
   defaults: {
     VCard: {
-      rounded: 'xl',
+      rounded: 'lg',
       elevation: 0,
     },
     VBtn: {
@@ -102,20 +106,20 @@ export default createVuetify({
       rounded: 'lg',
     },
     VChip: {
-      rounded: 'lg',
+      rounded: 'md',
+      variant: 'tonal',
     },
     VAlert: {
-      rounded: 'xl',
+      rounded: 'lg',
     },
     VDataTable: {
       hover: true,
     },
     VExpansionPanels: {
-      rounded: 'xl',
+      rounded: 'lg',
     },
     VNavigationDrawer: {
       rounded: 'e-xl',
     },
   },
-  components: { VTimePicker, VRating },
 })

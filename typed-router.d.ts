@@ -23,12 +23,16 @@ declare module 'vue-router/auto-routes' {
     '/events': RouteRecordInfo<'/events', '/events', Record<never, never>, Record<never, never>>,
     '/feedback': RouteRecordInfo<'/feedback', '/feedback', Record<never, never>, Record<never, never>>,
     '/feedback-share': RouteRecordInfo<'/feedback-share', '/feedback-share', Record<never, never>, Record<never, never>>,
+    '/forgot-password': RouteRecordInfo<'/forgot-password', '/forgot-password', Record<never, never>, Record<never, never>>,
     '/home': RouteRecordInfo<'/home', '/home', Record<never, never>, Record<never, never>>,
     '/login': RouteRecordInfo<'/login', '/login', Record<never, never>, Record<never, never>>,
     '/people': RouteRecordInfo<'/people', '/people', Record<never, never>, Record<never, never>>,
+    '/reset-password': RouteRecordInfo<'/reset-password', '/reset-password', Record<never, never>, Record<never, never>>,
     '/roles': RouteRecordInfo<'/roles', '/roles', Record<never, never>, Record<never, never>>,
     '/rosters': RouteRecordInfo<'/rosters', '/rosters', Record<never, never>, Record<never, never>>,
+    '/schedule': RouteRecordInfo<'/schedule', '/schedule', Record<never, never>, Record<never, never>>,
     '/signup': RouteRecordInfo<'/signup', '/signup', Record<never, never>, Record<never, never>>,
     '/streaks': RouteRecordInfo<'/streaks', '/streaks', Record<never, never>, Record<never, never>>,
+    '/users': RouteRecordInfo<'/users', '/users', Record<never, never>, Record<never, never>>,
   }
 }

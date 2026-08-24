@@ -2,15 +2,14 @@
   <v-container class="pa-6 pa-md-8" fluid>
 
     <PageHeader
-      eyebrow="Post-service"
-      italic="feedback"
-      subtitle="Mark attendance and record notes for the team after each service."
-      title="Roster"
+      eyebrow="Menu"
+      subtitle="Mark attendance and record notes for the team after each event."
+      title="Feedback"
     />
 
     <!-- Step 1 — select a date -->
     <div class="step-block mb-6">
-      <div class="step-marker mb-3 d-flex align-center gap-3">
+      <div class="step-marker mb-3 d-flex align-center ga-3">
         <span class="step-number font-serif">01</span>
         <span class="step-label text-overline font-weight-bold">Select a date</span>
         <v-divider class="flex-grow-1" />
@@ -22,7 +21,7 @@
           item-title="label"
           item-value="value"
           :items="availableDates"
-          label="Choose a service date"
+          label="Choose an event date"
           :loading="loadingRosters"
           prepend-inner-icon="mdi-calendar-outline"
           @update:model-value="onDateSelected"
@@ -32,13 +31,13 @@
 
     <!-- Step 2 — shareable all-events feedback link (shown first) -->
     <div v-if="selectedDate" class="step-block mb-6">
-      <div class="step-marker mb-3 d-flex align-center gap-3">
+      <div class="step-marker mb-3 d-flex align-center ga-3">
         <span class="step-number font-serif">02</span>
         <span class="step-label text-overline font-weight-bold">Share feedback link</span>
         <v-divider class="flex-grow-1" />
       </div>
       <v-card class="pa-5 share-card" rounded="lg" variant="outlined">
-        <div class="d-flex align-center gap-3 mb-4">
+        <div class="d-flex align-center ga-3 mb-4">
           <v-avatar class="share-avatar" size="40">
             <v-icon size="20">mdi-link-variant</v-icon>
           </v-avatar>
@@ -60,7 +59,7 @@
           variant="outlined"
           @focus="$event.target.select()"
         />
-        <div class="d-flex gap-2 mt-3 flex-wrap">
+        <div class="d-flex ga-2 mt-3 flex-wrap">
           <v-btn
             :color="copied ? 'success' : 'primary'"
             :disabled="!shareUrl"
@@ -88,7 +87,7 @@
 
     <!-- Step 3 — record attendance manually for one event -->
     <div v-if="selectedDate" class="step-block mb-6">
-      <div class="step-marker mb-3 d-flex align-center gap-3">
+      <div class="step-marker mb-3 d-flex align-center ga-3">
         <span class="step-number font-serif">03</span>
         <span class="step-label text-overline font-weight-bold">Or record attendance yourself</span>
         <v-divider class="flex-grow-1" />
@@ -110,7 +109,7 @@
 
     <!-- Attendance + feedback for the selected event -->
     <div v-if="persons.length > 0" class="step-block">
-      <div class="step-marker mb-3 d-flex align-center gap-3">
+      <div class="step-marker mb-3 d-flex align-center ga-3">
         <span class="step-label text-overline font-weight-bold">Attendance &amp; feedback</span>
         <v-divider class="flex-grow-1" />
         <v-chip color="success" size="small" variant="tonal">{{ presentCount }} present</v-chip>
@@ -142,7 +141,7 @@
           >
             <v-row align="center">
               <!-- Avatar + name -->
-              <v-col class="d-flex align-center gap-3" cols="12" sm="3">
+              <v-col class="d-flex align-center ga-3" cols="12" sm="3">
                 <v-avatar
                   :color="p.is_present ? 'success' : 'error'"
                   rounded="lg"
@@ -259,13 +258,13 @@
       <v-icon class="mb-4" color="primary" size="48" style="opacity:.45;">mdi-calendar-outline</v-icon>
       <h3 class="text-h6 font-serif font-weight-medium mb-2">Select a date above</h3>
       <p class="text-body-2 text-medium-emphasis mx-auto" style="max-width: 360px;">
-        Pick a service date to get a shareable feedback link for all its events, or record attendance yourself.
+        Pick a date to get a shareable feedback link for all its events, or record attendance yourself.
       </p>
     </v-card>
 
     <!-- Collected feedback history -->
     <div v-if="summaries.length > 0" class="step-block mt-10">
-      <div class="step-marker mb-3 d-flex align-center gap-3">
+      <div class="step-marker mb-3 d-flex align-center ga-3">
         <span class="step-label text-overline font-weight-bold">Collected feedback</span>
         <v-divider class="flex-grow-1" />
         <v-btn
@@ -280,13 +279,13 @@
       <v-expansion-panels variant="accordion">
         <v-expansion-panel v-for="s in summaries" :key="s.date" rounded="lg">
           <v-expansion-panel-title>
-            <div class="d-flex align-center flex-wrap gap-3" style="width: 100%;">
+            <div class="d-flex align-center flex-wrap ga-3" style="width: 100%;">
               <span class="font-weight-medium">{{ formatDayLabel(s.date) }}</span>
               <v-chip class="ms-2" color="success" size="x-small" variant="tonal">{{ s.present_count }} present</v-chip>
               <v-chip
                 v-if="s.absent_count"
+                class="ms-1"
                 color="error"
-                class = "ms-1"
                 size="x-small"
                 variant="tonal"
               >{{ s.absent_count }} absent</v-chip>
@@ -297,12 +296,12 @@
               <p class="text-caption text-uppercase text-medium-emphasis mb-2" style="letter-spacing:.08em;">
                 Present
               </p>
-              <div v-if="s.present.length > 0" class="d-flex flex-wrap gap-1">
+              <div v-if="s.present.length > 0" class="d-flex flex-wrap ga-1">
                 <v-chip
                   v-for="name in s.present"
                   :key="name"
-                  color="success"
                   class="ms-1 mt-1"
+                  color="success"
                   size="small"
                   variant="tonal"
                 >{{ name }}</v-chip>
@@ -314,12 +313,12 @@
               <p class="text-caption text-uppercase text-medium-emphasis mb-2" style="letter-spacing:.08em;">
                 Absent
               </p>
-              <div class="d-flex flex-wrap gap-1">
+              <div class="d-flex flex-wrap ga-1">
                 <v-chip
                   v-for="name in s.absent"
                   :key="name"
-                  color="error"
                   class="ms-1 mt-1"
+                  color="error"
                   size="small"
                   variant="tonal"
                 >{{ name }}</v-chip>
@@ -402,9 +401,25 @@
 </template>
 
 <script setup>
+  /**
+   * Feedback admin page — two ways to collect attendance for a past event date.
+   *
+   * 1. Direct entry: pick a date, pick one of that date's events, mark each assigned
+   *    person present/absent with an optional note, rating and category.
+   * 2. Share link: generate a one-time, unauthenticated URL that a non-admin fills in
+   *    (see feedback-share.vue). One link per date, and only before any feedback for
+   *    that date exists.
+   *
+   * A date is "collected" once it appears in the summaries list; collected dates are
+   * removed from the picker and can only be amended through the edit dialog, which
+   * rewrites the day-level note for every row on that date.
+   *
+   * Submitting attendance is what moves members' streaks.
+   */
   import { computed, onMounted, ref } from 'vue'
   import { toast } from 'vue-sonner'
   import { useRostersStore } from '@/stores/rosters'
+  import { readApiError } from '@/validation'
   import api from '../api'
 
   const rostersStore = useRostersStore()
@@ -432,8 +447,8 @@
   // Dates that already have collected feedback — excluded from the picker.
   const collectedDates = computed(() => new Set(summaries.value.map(s => s.date)))
 
-  // Distinct service dates with NO feedback yet, most recent first,
-  // labelled "Sunday 12 May 2026".
+  // Distinct event dates with NO feedback yet, most recent first, labelled with
+  // the weekday the date actually falls on — e.g. "Wednesday 12 May 2026".
   const availableDates = computed(() => {
     const seen = new Set()
     const out = []
@@ -470,7 +485,7 @@
     { value: 'teamwork', label: 'Teamwork' },
     { value: 'performance', label: 'Performance' },
     { value: 'attitude', label: 'Attitude' },
-    { value: 'excellent', label: 'Excellent Service' },
+    { value: 'excellent', label: 'Excellence' },
   ]
 
   const presentCount = computed(() => persons.value.filter(p => p.is_present).length)
@@ -488,7 +503,7 @@
     if (!dateStr) {
       return ''
     }
-    // e.g. "Sunday 12 May 2026"
+    // e.g. "Wednesday 12 May 2026" — whatever weekday the date falls on.
     return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-GB', {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
     })
@@ -546,7 +561,7 @@
       toast.success('Notes updated.')
       editDialog.value = false
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Failed to update notes')
+      toast.error(readApiError(error, 'Failed to update notes'))
     } finally {
       savingEdit.value = false
     }
@@ -582,7 +597,7 @@
       shareUrl.value = url
       copied.value = false
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Failed to generate share link')
+      toast.error(readApiError(error, 'Failed to generate share link'))
     } finally {
       generatingLink.value = false
     }

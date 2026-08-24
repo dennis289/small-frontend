@@ -1,32 +1,34 @@
 <template>
   <v-container class="pa-6 pa-md-8" fluid>
     <PageHeader
-      eyebrow="Schedule"
-      italic="events"
-      subtitle="The recurring services and special events on your team's calendar."
-      title="Service"
+      eyebrow="Setup"
+      subtitle="The recurring and one-off events on your team's calendar."
+      title="Events"
     >
       <template #actions>
         <v-btn color="primary" prepend-icon="mdi-calendar-plus-outline" variant="flat" @click="openEditor(null)">Add event</v-btn>
       </template>
     </PageHeader>
 
-    <div class="toolbar-row mb-4 d-flex align-center flex-wrap" style="gap: 12px;">
-      <v-text-field
-        v-model="search"
-        class="toolbar-search"
-        clearable
-        density="comfortable"
-        hide-details
-        placeholder="Search by event name"
-        prepend-inner-icon="mdi-magnify"
-        variant="outlined"
-      />
-      <v-spacer />
-      <span class="text-caption text-medium-emphasis">{{ events.length }} {{ events.length === 1 ? 'event' : 'events' }}</span>
-    </div>
+    <StatTiles :tiles="statTiles" />
 
     <v-card class="overflow-hidden" rounded="lg" variant="outlined">
+      <div class="table-toolbar pa-4">
+        <v-text-field
+          v-model="search"
+          class="table-search"
+          clearable
+          density="comfortable"
+          hide-details
+          placeholder="Search events..."
+          prepend-inner-icon="mdi-magnify"
+        />
+        <v-spacer />
+        <span class="text-caption text-medium-emphasis">
+          {{ events.length }} {{ events.length === 1 ? 'event' : 'events' }}
+        </span>
+      </div>
+
       <v-data-table
         density="comfortable"
         :headers="headers"
@@ -35,7 +37,7 @@
         :search="search"
       >
         <template #item.role_names="{ item }">
-          <div v-if="item.role_names?.length" class="d-flex flex-wrap gap-1 py-1">
+          <div v-if="item.role_names?.length" class="d-flex flex-wrap ga-1 py-1">
             <v-chip
               v-for="rn in item.role_names"
               :key="rn"
@@ -76,24 +78,22 @@
           </v-btn>
         </v-toolbar>
         <v-card-text>
-          <v-form @submit.prevent="saveEvent">
+          <v-form ref="eventForm" @submit.prevent="saveEvent">
             <v-text-field
               v-model="form.name"
-              label="Event Name*"
-              required
+              label="Event name*"
               rounded="lg"
-              :rules="[v => !!v || 'Name is required']"
+              :rules="[rules.required('a name for this event')]"
             />
             <v-row>
               <v-col>
                 <v-text-field
                   v-model="form.start_time"
                   append-inner-icon="mdi-clock-time-four-outline"
-                  label="Start Time*"
+                  label="Start time*"
                   readonly
-                  required
                   rounded="lg"
-                  :rules="[v => !!v || 'Start time is required']"
+                  :rules="[rules.chooseOne('a start time')]"
                 >
                   <v-dialog v-model="startTimeDialog" activator="parent" width="auto">
                     <v-time-picker
@@ -107,11 +107,13 @@
                 <v-text-field
                   v-model="form.end_time"
                   append-inner-icon="mdi-clock-time-four-outline"
-                  label="End Time*"
+                  label="End time*"
                   readonly
-                  required
                   rounded="lg"
-                  :rules="[v => !!v || 'End time is required']"
+                  :rules="[
+                    rules.chooseOne('an end time'),
+                    rules.endAfterStart(() => form.start_time),
+                  ]"
                 >
                   <v-dialog v-model="endTimeDialog" activator="parent" width="auto">
                     <v-time-picker
@@ -147,7 +149,7 @@
               <v-btn variant="text" @click="editorDialog = false">Cancel</v-btn>
               <v-btn color="primary" type="submit" variant="flat">Save</v-btn>
             </v-card-actions>
-            <small class="text-caption text-medium-emphasis">* indicates required fields</small>
+            <small class="text-caption text-medium-emphasis">Fields marked * are required</small>
           </v-form>
         </v-card-text>
       </v-card>
@@ -174,17 +176,28 @@
 </template>
 
 <script setup>
+  /**
+   * Events page — CRUD for the recurring slots that get staffed.
+   *
+   * The roles bound to an event are exactly what the generator fills for it, so an
+   * event with no roles produces an empty card on the roster. Deactivating an event
+   * (`is_active`) removes it from all future generations; excluding it for a single
+   * date is done from the generate dialog instead.
+   */
   import { storeToRefs } from 'pinia'
-  import { onMounted, ref } from 'vue'
+  import { computed, nextTick, onMounted, ref } from 'vue'
   import { toast } from 'vue-sonner'
   import { useEventsStore } from '@/stores/events'
   import { useRolesStore } from '@/stores/roles'
+  import * as rules from '@/validation'
+  import { validateForm } from '@/validation'
 
   const eventsStore = useEventsStore()
   const rolesStore = useRolesStore()
   const { events } = storeToRefs(eventsStore)
 
   const editorDialog = ref(false)
+  const eventForm = ref(null)
   const editedEvent = ref(null)
   const deleteDialog = ref(false)
   const startTimeDialog = ref(false)
@@ -206,8 +219,21 @@
     { title: 'Start time', value: 'start_time' },
     { title: 'End time', value: 'end_time' },
     { title: 'Roles', value: 'role_names', sortable: false },
-    { title: 'Actions', value: 'actions', sortable: false },
+    { title: '', value: 'actions', sortable: false, align: 'end' },
   ]
+
+  const statTiles = computed(() => {
+    const all = events.value || []
+    const active = all.filter(e => e.is_active !== false)
+    // An event with no roles bound produces no assignments, so it is worth
+    // surfacing rather than leaving to be discovered at generation time.
+    const unstaffed = all.filter(e => !e.role_names || e.role_names.length === 0)
+    return [
+      { label: 'Total events', value: all.length, icon: 'mdi-calendar-star-outline' },
+      { label: 'Active', value: active.length, icon: 'mdi-calendar-check-outline' },
+      { label: 'No roles set', value: unstaffed.length, icon: 'mdi-calendar-alert-outline' },
+    ]
+  })
 
   async function loadData () {
     const result = await eventsStore.fetchEvents()
@@ -250,9 +276,13 @@
         roles: [],
       }
     editorDialog.value = true
+    nextTick(() => eventForm.value?.resetValidation())
   }
 
   async function saveEvent () {
+    if (!await validateForm(eventForm)) {
+      return
+    }
     let result
     if (editedEvent.value) {
       const payload = { ...form.value, id: editedEvent.value.id }
@@ -263,6 +293,7 @@
     if (result.success) {
       await loadData()
       editorDialog.value = false
+      eventForm.value?.resetValidation()
     } else {
       toast.error(result.error || 'Failed to save event.')
     }

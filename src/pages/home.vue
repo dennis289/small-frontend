@@ -3,7 +3,7 @@
 
     <!-- ─── Hero greeting ─────────────────────────────────────────────────── -->
     <section class="home-hero mb-10">
-      <div class="hero-eyebrow d-flex align-center gap-2 mb-3">
+      <div class="hero-eyebrow d-flex align-center ga-2 mb-3">
         <span class="eyebrow-rule" />
         <span class="text-caption text-uppercase font-weight-medium text-medium-emphasis" style="letter-spacing:.25em;">
           {{ todayLabel }}
@@ -20,7 +20,7 @@
 
     <!-- ─── At-a-glance stats ─────────────────────────────────────────────── -->
     <section class="mb-10">
-      <div class="section-label d-flex align-center gap-3 mb-4">
+      <div class="section-label d-flex align-center ga-3 mb-4">
         <span class="text-overline font-weight-bold" style="letter-spacing:.2em;">At a glance</span>
         <v-divider class="flex-grow-1" />
       </div>
@@ -51,7 +51,7 @@
     <v-row>
       <!-- Quick actions -->
       <v-col cols="12" md="7">
-        <div class="section-label d-flex align-center gap-3 mb-4">
+        <div class="section-label d-flex align-center ga-3 mb-4">
           <span class="text-overline font-weight-bold" style="letter-spacing:.2em;">Quick actions</span>
           <v-divider class="flex-grow-1" />
         </div>
@@ -75,7 +75,7 @@
 
       <!-- Top streaks preview -->
       <v-col cols="12" md="5">
-        <div class="section-label d-flex align-center gap-3 mb-4">
+        <div class="section-label d-flex align-center ga-3 mb-4">
           <span class="text-overline font-weight-bold" style="letter-spacing:.2em;">Top streaks</span>
           <v-divider class="flex-grow-1" />
           <v-btn
@@ -112,7 +112,7 @@
                   Best: {{ member.longest_streak }}
                 </div>
               </div>
-              <div class="d-flex align-center gap-1">
+              <div class="d-flex align-center ga-1">
                 <v-icon color="primary" size="14">mdi-fire</v-icon>
                 <span class="text-body-1 font-weight-bold">{{ member.current_streak }}</span>
               </div>
@@ -127,45 +127,64 @@
       <v-card>
         <v-card-title>Add a member</v-card-title>
         <v-card-text>
-          <v-row dense>
-            <v-col cols="12" md="6">
-              <v-text-field v-model="form.first_name" label="First Name*" required />
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field v-model="form.last_name" label="Last Name*" required />
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field v-model="form.email" label="Email*" required />
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field v-model="form.phone_number" label="Phone*" required />
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field v-model="form.area_of_residence" label="Area of residence*" required />
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-checkbox v-model="form.is_producer" color="primary" label="Is Producer" />
-              <v-checkbox v-model="form.is_assistant_producer" color="primary" label="Is Assistant Producer" />
-            </v-col>
-            <v-col cols="12" sm="6">
-              <v-autocomplete
-                v-model="form.roles"
-                clearable
-                closable-chips
-                item-title="name"
-                item-value="id"
-                :items="rolesList"
-                label="Roles"
-                multiple
-              >
-                <template #selection="{item, index}">
-                  <v-chip v-if="index < 3" :key="index" small :text="item.title" />
-                  <span v-else-if="index === 3" class="grey--text text--darken-1">+{{ form.roles.length - 3 }} more</span>
-                </template>
-              </v-autocomplete>
-            </v-col>
-          </v-row>
-          <small class="text-caption text-medium-emphasis">* indicates required fields</small>
+          <v-form ref="memberFormRef" @submit.prevent="addUser">
+            <v-row dense>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="memberData.first_name"
+                  label="First name*"
+                  :rules="[rules.required('a first name')]"
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="memberData.last_name"
+                  label="Last name*"
+                  :rules="[rules.required('a last name')]"
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="memberData.email"
+                  label="Email*"
+                  :rules="[rules.required('an email address'), rules.email()]"
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="memberData.phone_number"
+                  label="Phone*"
+                  :rules="[rules.required('a phone number'), rules.phone()]"
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field v-model="memberData.area_of_residence" label="Area of residence" />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-checkbox v-model="memberData.is_producer" color="primary" label="Is Producer" />
+                <v-checkbox v-model="memberData.is_assistant_producer" color="primary" label="Is Assistant Producer" />
+              </v-col>
+              <v-col cols="12" sm="6">
+                <v-autocomplete
+                  v-model="memberData.roles"
+                  clearable
+                  closable-chips
+                  item-title="name"
+                  item-value="id"
+                  :items="rolesList"
+                  label="Roles*"
+                  multiple
+                  :rules="[rules.atLeastOne('role')]"
+                >
+                  <template #selection="{item, index}">
+                    <v-chip v-if="index < 3" :key="index" small :text="item.title" />
+                    <span v-else-if="index === 3" class="grey--text text--darken-1">+{{ memberData.roles.length - 3 }} more</span>
+                  </template>
+                </v-autocomplete>
+              </v-col>
+            </v-row>
+            <small class="text-caption text-medium-emphasis">Fields marked * are required</small>
+          </v-form>
         </v-card-text>
         <v-divider />
         <v-card-actions class="justify-space-between px-4 py-3">
@@ -180,18 +199,24 @@
       <v-card>
         <v-card-title>Add a role</v-card-title>
         <v-card-text>
-          <v-row dense>
-            <v-col cols="12" md="4" sm="6">
-              <v-text-field v-model="form.name" label="Role Name*" required />
-            </v-col>
-            <v-col cols="12" md="4" sm="6">
-              <v-text-field v-model="form.description" label="Description" />
-            </v-col>
-            <v-col cols="12" md="4" sm="6">
-              <v-checkbox v-model="form.is_special_role" color="primary" label="Is Special Role" />
-            </v-col>
-          </v-row>
-          <small class="text-caption text-medium-emphasis">* indicates required fields</small>
+          <v-form ref="roleFormRef" @submit.prevent="addRole">
+            <v-row dense>
+              <v-col cols="12" md="4" sm="6">
+                <v-text-field
+                  v-model="roleData.name"
+                  label="Role name*"
+                  :rules="[rules.required('a role name')]"
+                />
+              </v-col>
+              <v-col cols="12" md="4" sm="6">
+                <v-text-field v-model="roleData.description" label="Description" />
+              </v-col>
+              <v-col cols="12" md="4" sm="6">
+                <v-checkbox v-model="roleData.is_special_role" color="primary" label="Is Special Role" />
+              </v-col>
+            </v-row>
+            <small class="text-caption text-medium-emphasis">Fields marked * are required</small>
+          </v-form>
         </v-card-text>
         <v-divider />
         <v-card-actions class="justify-space-between px-4 py-3">
@@ -206,42 +231,46 @@
       <v-card>
         <v-card-title>Add an event</v-card-title>
         <v-card-text>
-          <v-text-field
-            label="Event Name"
-            required
-            :rules="[v => !!v || 'Event name is required']"
-          />
-          <v-row>
-            <v-col>
-              <v-text-field
-                v-model="form.start_time"
-                append-inner-icon="mdi-clock-time-four-outline"
-                label="Start Time"
-                readonly
-                required
-                :rules="[v => !!v || 'Start time is required']"
-              >
-                <v-dialog v-model="startTimeDialog" activator="parent" width="auto">
-                  <v-time-picker v-model="form.start_time" />
-                </v-dialog>
-              </v-text-field>
-            </v-col>
-            <v-col>
-              <v-text-field
-                v-model="form.end_time"
-                append-inner-icon="mdi-clock-time-four-outline"
-                label="End Time"
-                readonly
-                required
-                :rules="[v => !!v || 'End time is required']"
-              >
-                <v-dialog v-model="endTimeDialog" activator="parent" width="auto">
-                  <v-time-picker v-model="form.end_time" />
-                </v-dialog>
-              </v-text-field>
-            </v-col>
-          </v-row>
-          <v-text-field v-model="form.description" label="Description" type="text" />
+          <v-form ref="eventFormRef" @submit.prevent="addEvent">
+            <v-text-field
+              v-model="eventData.name"
+              label="Event name*"
+              :rules="[rules.required('a name for this event')]"
+            />
+            <v-row>
+              <v-col>
+                <v-text-field
+                  v-model="eventData.start_time"
+                  append-inner-icon="mdi-clock-time-four-outline"
+                  label="Start time*"
+                  readonly
+                  :rules="[rules.chooseOne('a start time')]"
+                >
+                  <v-dialog v-model="startTimeDialog" activator="parent" width="auto">
+                    <v-time-picker v-model="eventData.start_time" />
+                  </v-dialog>
+                </v-text-field>
+              </v-col>
+              <v-col>
+                <v-text-field
+                  v-model="eventData.end_time"
+                  append-inner-icon="mdi-clock-time-four-outline"
+                  label="End time*"
+                  readonly
+                  :rules="[
+                    rules.chooseOne('an end time'),
+                    rules.endAfterStart(() => eventData.start_time),
+                  ]"
+                >
+                  <v-dialog v-model="endTimeDialog" activator="parent" width="auto">
+                    <v-time-picker v-model="eventData.end_time" />
+                  </v-dialog>
+                </v-text-field>
+              </v-col>
+            </v-row>
+            <v-text-field v-model="eventData.description" label="Description" type="text" />
+            <small class="text-caption text-medium-emphasis">Fields marked * are required</small>
+          </v-form>
         </v-card-text>
         <v-divider />
         <v-card-actions class="justify-space-between px-4 py-3">
@@ -254,6 +283,13 @@
 </template>
 
 <script setup>
+  /**
+   * Dashboard / landing page for tenant users.
+   *
+   * Summarises counts across people, roles, events and rosters, shows the top
+   * attendance streaks, and offers quick-add dialogs for a member, role or event so
+   * a new client can populate the basics without visiting each page.
+   */
   import { computed, onMounted, ref } from 'vue'
   import { useRouter } from 'vue-router'
   import { toast } from 'vue-sonner'
@@ -262,6 +298,8 @@
   import { usePeopleStore } from '@/stores/people'
   import { useRolesStore } from '@/stores/roles'
   import { useRostersStore } from '@/stores/rosters'
+  import * as rules from '@/validation'
+  import { validateForm } from '@/validation'
 
   const rolesStore = useRolesStore()
   const peopleStore = usePeopleStore()
@@ -280,7 +318,15 @@
   const topStreaks = ref([])
   const loadingStreaks = ref(false)
 
-  const form = ref({
+  // One object per dialog.
+  //
+  // These three shortcuts used to share a single `form` ref, which is why two of
+  // them didn't work: the role dialog wrote into `form` while `addRole` posted a
+  // separate, never-written `roleForm`, so it always sent a blank role; and the
+  // event dialog's name field had no `v-model` at all while `addEvent` posted the
+  // *member* object. Validation can't help a form whose values are never sent, so
+  // each dialog now owns its own state.
+  const blankMember = () => ({
     first_name: '',
     last_name: '',
     email: '',
@@ -290,21 +336,43 @@
     is_assistant_producer: false,
     roles: [],
   })
-
-  const roleForm = ref({
+  const blankRole = () => ({
     name: '',
     description: '',
     is_special_role: false,
   })
+  const blankEvent = () => ({
+    name: '',
+    start_time: '',
+    end_time: '',
+    description: '',
+  })
+
+  const memberData = ref(blankMember())
+  const roleData = ref(blankRole())
+  const eventData = ref(blankEvent())
+
+  const memberFormRef = ref(null)
+  const roleFormRef = ref(null)
+  const eventFormRef = ref(null)
 
   function closeDialog () {
     memberDialog.value = false
     eventDialog.value = false
     roleDialog.value = false
+    memberData.value = blankMember()
+    roleData.value = blankRole()
+    eventData.value = blankEvent()
+    memberFormRef.value?.resetValidation()
+    roleFormRef.value?.resetValidation()
+    eventFormRef.value?.resetValidation()
   }
 
   async function addRole () {
-    const result = await rolesStore.createRole(roleForm.value)
+    if (!await validateForm(roleFormRef)) {
+      return
+    }
+    const result = await rolesStore.createRole(roleData.value)
     if (result.success) {
       toast.success('Role added successfully!')
       closeDialog()
@@ -323,7 +391,10 @@
   }
 
   async function addUser () {
-    const result = await peopleStore.createPerson(form.value)
+    if (!await validateForm(memberFormRef)) {
+      return
+    }
+    const result = await peopleStore.createPerson(memberData.value)
     if (result.success) {
       toast.success('User added successfully!')
       closeDialog()
@@ -333,7 +404,10 @@
   }
 
   async function addEvent () {
-    const result = await eventsStore.createEvent(form.value)
+    if (!await validateForm(eventFormRef)) {
+      return
+    }
+    const result = await eventsStore.createEvent(eventData.value)
     if (result.success) {
       toast.success('Event added successfully!')
       closeDialog()
@@ -388,7 +462,7 @@
   const actions = [
     { label: 'Add member', sub: 'Register a teammate', icon: 'mdi-account-plus-outline', handler: () => memberDialog.value = true },
     { label: 'Add role', sub: 'Create a roster role', icon: 'mdi-shape-plus-outline', handler: () => roleDialog.value = true },
-    { label: 'Add event', sub: 'Schedule a service', icon: 'mdi-calendar-plus-outline', handler: () => eventDialog.value = true },
+    { label: 'Add event', sub: 'Schedule an event', icon: 'mdi-calendar-plus-outline', handler: () => eventDialog.value = true },
   ]
 
   onMounted(async () => {
