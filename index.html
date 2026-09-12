@@ -5,9 +5,16 @@
     <link rel="icon" href="/logo.png" type="image/png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Team Roster</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+    <!--
+      No Google Fonts link here on purpose. It used to pull Inter and Cormorant
+      Garamond, and it was the worst kind of asset: a render-blocking stylesheet on
+      a third-party origin, so first paint waited on DNS + TLS to fonts.googleapis.com
+      and then on a second hop to fonts.gstatic.com for the files themselves.
+      Cormorant was dead weight — `.font-serif` has been Inter for a while (see
+      custom-theme.css) and nothing else asked for a serif — and Inter is now
+      self-hosted through unplugin-fonts/fontsource in vite.config.mjs, served from
+      our own origin on a connection the browser has already opened.
+    -->
   </head>
   <body>
     <div id="app"></div>
