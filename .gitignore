@@ -21,3 +21,8 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+
+# Generated MDI subset (rebuilt by scripts/build-mdi-subset.mjs)
+src/styles/mdi-subset.css
+src/assets/fonts/mdi-subset.woff2
